@@ -57,14 +57,15 @@ label{font-size:13px;color:#aaa}.trade{display:flex;justify-content:space-betwee
 <div class="acct"><button id="btnDemo" class="activeDemo" onclick="switchAccount('demo')">DEMO</button><button id="btnReal" onclick="switchAccount('real')">REAL</button></div>
 <div class="card"><b><span id="acctLabel">Demo</span> Balance: $<span id="bal">10000.00</span></b><br><span class="small" id="pnl">Floating: $0</span><br><span class="small" id="todayPnl">Today: $0</span><br><span class="small">KYC: <span id="kycBadge" class="badge badge-not">NOT VERIFIED</span> <span id="kycShort"></span></span><br><span class="small">M-Pesa Till: <b style="color:#00d084">6636264</b></span>
 <div class="row" style="margin-top:12px"><button class="depbtn" onclick="openMoney('deposit')">Deposit</button><button class="withbtn" onclick="openMoney('withdraw')">Withdraw</button></div>
-<button class="kycbtn" onclick="openKYC()">Verify KYC</button><button class="invitebtn" onclick="openInvite()">Invite - Earn $1</button><button class="kycbtn" style="background:#ff3b3b;color:#fff" onclick="resetDemo()">Reset Demo</button></div>
+<button class="kycbtn" onclick="openKYC()">Verify KYC</button><button class="invitebtn" onclick="openInvite()">Invite - Earn $5</button><button class="kycbtn" style="background:#ff3b3b;color:#fff" onclick="resetDemo()">Reset Demo</button></div>
 <div id="list"></div>
 <div class="card"><div class="tab"><button id="tabOpen" class="active" onclick="showTab('open')">Open Trades</button><button id="tabHist" onclick="showTab('hist')">History</button><button id="tabTrans" onclick="showTab('trans')">Money</button></div><div id="trades">No open trades</div></div></div>
 <script>
 function loadLS(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function saveLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 var assets=[{n:'EUR/USD',p:1.0850,o:1.0850,c:[]},{n:'GBP/USD',p:1.27,o:1.27,c:[]},{n:'USD/JPY',p:151.2,o:151.2,c:[]},{n:'GOLD',p:2350,o:2350,c:[]},{n:'BTC/USD',p:65000,o:65000,c:[]},{n:'USD/KES',p:130.5,o:130.5,c:[]}];
-var selected=null,balances=loadLS('fbs_bal',{demo:10000,real:0}),accountMode=loadLS('fbs_mode','demo'),trades=loadLS('fbs_trades',[]),closedTrades=loadLS('fbs_closed',[]),moneyTxns=loadLS('fbs_txns',[]),lot=0.01,timeframe='1M',tickCount=0,currentTab='open',moneyType='deposit',chartType=loadLS('fbs_ct','candles'),visibleCandles=loadLS('fbs_zoom',30),isLive=false;
+var selected=null,balances=loadLS('fbs_bal',{demo:10000,real:794}),accountMode=loadLS('fbs_mode','demo'),trades=loadLS('fbs_trades',[]),closedTrades=loadLS('fbs_closed',[]),moneyTxns=loadLS('fbs_txns',[]),lot=0.01,timeframe='1M',tickCount=0,currentTab='open',moneyType='deposit',chartType=loadLS('fbs_ct','candles'),visibleCandles=loadLS('fbs_zoom',30),isLive=false;
+if(balances.real===0){balances.real=794;saveLS('fbs_bal',balances)}
 var kyc=loadLS('fbs_kyc',{phone:'',phoneVerified:false,idFront:false,idBack:false,status:'NOT_VERIFIED'});
 var refCode=loadLS('fbs_ref',null);if(!refCode){refCode='FBS'+Math.floor(1000+Math.random()*9000);saveLS('fbs_ref',refCode)}
 var invites=loadLS('fbs_inv',0),inviteEarned=loadLS('fbs_invE',0);
@@ -117,6 +118,7 @@ function back(){selected=null;location.reload()}
 function openTrade(type){var a=getAsset(selected);var tp=document.getElementById('tpIn').value?parseFloat(document.getElementById('tpIn').value):null;var sl=document.getElementById('slIn').value?parseFloat(document.getElementById('slIn').value):null;if(tp&&((type==='BUY'&&tp<=a.p)||(type==='SELL'&&tp>=a.p))){alert('TP wrong side');return}if(sl&&((type==='BUY'&&sl>=a.p)||(type==='SELL'&&sl<=a.p))){alert('SL wrong side');return}trades.push({type:type,n:a.n,entry:a.p,lot:lot,tp:tp,sl:sl});saveAll();openDetail(a.n)}
 function doClose(i,reason){var t=trades[i],a=getAsset(t.n),prof=calcProfit(t);setBalance(getBalance()+prof);closedTrades.push({type:t.type,n:t.n,entry:t.entry,exit:a.p,lot:t.lot,profit:prof,reason:reason,account:accountMode});trades.splice(i,1);saveAll();if(selected)openDetail(selected);else renderList()}
 function closeTrade(i){doClose(i,'MANUAL')}
-function checkTPSL(){for(var i=trades.length-1;i>=0;i--){var t=trades[i],a=getAss>
+function checkTPSL(){for(var i=trades.length-1;i>=0;i--){var t=trades[i],a=getAsset(t.n),p=a.p;if(t.tp&&((t.type==='BUY'&&p>=t.tp)||(t.type==='SELL'&&p<=t.tp))){doClose(i,'TP');continue}if(t.sl&&((t.type==='BUY'&&p<=t.sl)||(t.type==='SELL'&&p>=t.sl))){doClose(i,'SL')}}}
 setInterval(function(){tickCount++;for(var i=0;i<assets.length;i++){var a=assets[i];var st=Math.abs(a.p)*0.00008;if(a.n==='BTC/USD')st=Math.abs(a.p)*0.0003;if(a.n==='GOLD')st=Math.abs(a.p)*0.0002;a.p+=(Math.random()-0.5)*st*2;var last=a.c[a.c.length-1];last.c=a.p;if(a.p>last.h)last.h=a.p;if(a.p<last.l)last.l=a.p;if(tickCount%3===0){a.c.push({o:a.p,h:a.p,l:a.p,c:a.p});if(a.c.length>60)a.c.shift()}}checkTPSL();if(selected)openDetail(selected);else renderList()},1000);
 renderList();
+</script></body></html>
