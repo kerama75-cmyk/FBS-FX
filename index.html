@@ -8,72 +8,77 @@ body{font-family:Arial;background:#0a0f1e;color:#fff;margin:0;padding:16px;paddi
 h1{color:#00d084;margin:0}
 .card{background:#141b32;padding:16px;border-radius:12px;margin:10px 0}
 .card.active{border:2px solid #00d084}
-.row{display:flex;gap:10px;position:sticky;bottom:10px}
+.row{display:flex;gap:10px}
 .buy{flex:1;background:#00d084;color:#000;border:0;padding:18px;border-radius:10px;font-weight:bold;font-size:19px}
 .sell{flex:1;background:#ff3b3b;color:#fff;border:0;padding:18px;border-radius:10px;font-weight:bold;font-size:19px}
 .small{color:#aaa;font-size:13px}
+.big{font-size:28px;font-weight:bold}
+.up{color:#00d084}.down{color:#ff3b3b}
 </style>
 </head>
 <body>
 <h1>FBS FX</h1>
 <p>Live Forex Prices</p>
-<div class="card"><b>Demo Balance: $<span id="balance">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span><br><span class="small" id="status">Connecting...</span></div>
+<div class="card"><b>Demo Balance: $<span id="balance">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span><br><span class="small" id="status">Live - Demo</span></div>
 <div id="coinList"></div>
-<div class="card"><h2 id="price">Loading...</h2><canvas id="chart" height="120"></canvas></div>
+<div class="card"><div class="small">Selected Pair</div><div class="big" id="price">Loading...</div><div class="small" id="change"></div></div>
 <div class="row">
 <button class="buy" onclick="openTrade('BUY')">BUY</button>
 <button class="sell" onclick="openTrade('SELL')">SELL</button>
 </div>
 <div class="card"><h3>Open Trades</h3><div id="trades">No open trades yet</div></div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let assets=[
-{key:'EUR',name:'EUR/USD',price:1.08,history:[]},
-{key:'GBP',name:'GBP/USD',price:1.27,history:[]},
-{key:'JPY',name:'USD/JPY',price:151.20,history:[]},
-{key:'XAU',name:'GOLD',price:2350,history:[]}
+{name:'EUR/USD',price:1.0850,open:1.0850},
+{name:'GBP/USD',price:1.2700,open:1.2700},
+{name:'USD/JPY',price:151.20,open:151.20},
+{name:'GOLD',price:2350.00,open:2350.00}
 ];
-let selected=assets[0], chart=null, balance=10000, trades=[], baseRates={};
+let selected=assets[0], balance=10000, trades=[];
 function render(){
- document.getElementById('coinList').innerHTML=assets.map(a=>'<div class="card '+(a===selected?'active':'')+'" onclick="selectCoin(\''+a.name+'\')"><b>'+a.name+'</b> - $'+a.price.toFixed(2)+'</div>').join('');
- document.getElementById('price').innerText=selected.name+' : $'+selected.price.toFixed(2);
+ document.getElementById('coinList').innerHTML=assets.map(a=>{
+  let ch=((a.price-a.open)/a.open*100).toFixed(2);
+  let cls=ch>=0?'up':'down';
+  return '<div class="card '+(a===selected?'active':'')+'" onclick="selectCoin(\''+a.name+'\')"><b>'+a.name+'</b> - $'+a.price.toFixed(2)+' <span class="'+cls+'">'+ch+'%</span></div>';
+ }).join('');
+ let s=selected;
+ let ch2=((s.price-s.open)/s.open*100).toFixed(2);
+ document.getElementById('price').innerText=s.name+' : $'+s.price.toFixed(2);
+ document.getElementById('change').innerHTML='<span class="'+(ch2>=0?'up':'down')+'">'+ch2+'% today</span>';
  document.getElementById('balance').innerText=balance.toFixed(2);
  let pnl=0;
- trades.forEach(t=>{let a=assets.find(x=>x.name===t.name); if(a){let d=t.type==='BUY'?a.price-t.entry:t.entry-a.price; pnl+=d*(t.name==='GOLD'?1:100);}});
+ trades.forEach(t=>{
+  let a=assets.find(x=>x.name===t.name);
+  let d=t.type==='BUY'?a.price-t.entry:t.entry-a.price;
+  pnl+=d*(t.name==='GOLD'?1:100);
+ });
  document.getElementById('pnl').innerText='Floating P/L: $'+pnl.toFixed(2);
- document.getElementById('trades').innerHTML=trades.length?trades.map((t,i)=>'<div style="border-top:1px solid #333;padding:8px 0"><b>'+t.type+' '+t.name+'</b> @ $'+t.entry.toFixed(2)+' <button onclick="closeTrade('+i+')" style="float:right">Close</button></div>').join(''):'No open trades yet';
- if(chart) chart.destroy();
- chart=new Chart(document.getElementById('chart'),{type:'line',data:{labels:selected.history.map((_,[STRIPPED]
+ document.getElementById('trades').innerHTML=trades.length?trades.map((t,i)=>'<div style="border-top:1px solid #333;padding:8px 0"><b>'+t.type+' '+t.name+'</b> @ $'+t.entry.toFixed(2)+' <button onclick="closeTrade('+i+')" style="float:right;padding:6px 12px">Close</button></div>').join(''):'No open trades yet';
 }
 function selectCoin(n){selected=assets.find(a=>a.name===n);render();}
-function openTrade(type){ trades.push({type:type,name:selected.name,entry:selected.price}); render(); }
+function openTrade(type){trades.push({type:type,name:selected.name,entry:selected.price});render();}
 function closeTrade(i){
  let t=trades[i]; let a=assets.find(x=>x.name===t.name);
  let profit=(t.type==='BUY'?a.price-t.entry:t.entry-a.price)*(t.name==='GOLD'?1:100);
  balance+=profit; trades.splice(i,1); render();
 }
-// Real rates via HTTPS - works on phone
 async function loadRates(){
  try{
   let r=await fetch('https://open.er-api.com/v6/latest/USD');
   let j=await r.json();
   if(j.rates){
-   assets[0].price=1/j.rates.EUR;
-   assets[1].price=1/j.rates.GBP;
-   assets[2].price=j.rates.JPY;
-   // Gold approx from USD - keep live ticking
+   assets[0].price=1/j.rates.EUR; assets[0].open=1/j.rates.EUR;
+   assets[1].price=1/j.rates.GBP; assets[1].open=1/j.rates.GBP;
+   assets[2].price=j.rates.JPY; assets[2].open=j.rates.JPY;
    document.getElementById('status').innerText='Live - Updated '+new Date().toLocaleTimeString();
-   assets.forEach(a=>{a.history.push(a.price); if(a.history.length>30)a.history.shift();});
    render();
   }
- }catch(e){ document.getElementById('status').innerText='Live Demo Mode - ticking'; }
+ }catch(e){}
 }
-// Small live tick every 1 sec so chart moves like real market
 setInterval(()=>{
  assets.forEach(a=>{
-  let move=(Math.random()-0.5)* (a.name==='GOLD'?0.8:0.0004);
-  a.price+=move; a.history.push(a.price); if(a.history.length>30)a.history.shift();
+  let step=a.name==='GOLD'?0.6:a.name==='USD/JPY'?0.02:0.0003;
+  a.price+=(Math.random()-0.5)*step;
  });
  render();
 },1000);
