@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FBS FX</title>
 <style>
-body{font-family:Arial;background:#0a0f1e;color:#fff;margin:0;padding:16px;padding-bottom:90px}
+body{font-family:Arial;background:#0a0f1e;color:#fff;margin:0;padding:16px;padding-bottom:110px}
 h1{color:#00d084;margin:0}
 .card{background:#141b32;padding:16px;border-radius:12px;margin:10px 0}
 .row{display:flex;gap:10px}
@@ -53,11 +53,33 @@ canvas{width:100%;display:block;border-radius:8px;background:#0d1428}
 .linkbox{background:#0a0f1e;padding:12px;border-radius:8px;word-break:break-all;font-size:13px;margin:8px 0}
 .chartWrap{position:relative;background:#0d1428;border-radius:8px;padding:8px}
 .legend{display:flex;justify-content:space-between;font-size:11px;color:#888;margin-top:4px}
+.tool{display:flex;gap:6px;margin:8px 0}
+.tool button{flex:1;padding:8px 0;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold;font-size:13px}
+.tool button.active{background:#00d084;color:#000}
+.mpesaBox{background:#1a5c2a;border:1px solid #00d084;border-radius:10px;padding:12px;margin:10px 0;text-align:center}
+.mpesaBox b{font-size:22px;letter-spacing:1px}
+.liveDot{font-size:12px}
 </style>
 </head>
 <body>
 <div id="err" style="color:#fff;background:#c00;padding:10px;display:none"></div>
-<div id="modal" class="modal"><div class="modalbox"><h2 id="modalTitle">Deposit</h2><label>Amount ($)</label><input type="number" id="moneyAmt" value="100" min="1"><div class="quick"><button onclick="setAmt(10)">$10</button><button onclick="setAmt(50)">$50</button><button onclick="setAmt(100)">$100</button><button onclick="setAmt(500)">$500</button></div><label>Method</label><select id="moneyMethod"><option>M-Pesa</option><option>Card</option><option>Bank Transfer</option><option>Crypto</option></select><div class="small" id="modalNote"></div><div class="row" style="margin-top:12px"><button class="depbtn" id="modalConfirm" onclick="confirmMoney()">Confirm</button><button style="flex:1;background:#444;color:#fff;border:0;padding:14px;border-radius:10px;font-weight:bold" onclick="closeModal()">Cancel</button></div></div></div>
+
+<!-- MONEY MODAL WITH MPESA TILL -->
+<div id="modal" class="modal"><div class="modalbox"><h2 id="modalTitle">Deposit</h2>
+<label>Amount ($)</label><input type="number" id="moneyAmt" value="100" min="1"><div class="quick"><button onclick="setAmt(10)">$10</button><button onclick="setAmt(50)">$50</button><button onclick="setAmt(100)">$100</button><button onclick="setAmt(500)">$500</button></div>
+<label>Method</label><select id="moneyMethod" onchange="onMethodChange()"><option>M-Pesa Till</option><option>Card</option><option>Bank Transfer</option><option>Crypto</option></select>
+<div id="mpesaSection">
+<div class="mpesaBox">📱 M-PESA TILL NUMBER<br><b>6636264</b><br><span class="small" style="color:#fff">Name: FBS FX</span><br><button onclick="copyTill()" style="background:#fff;color:#000;border:0;padding:8px 16px;border-radius:8px;font-weight:bold;margin-top:8px">📋 Copy Till Number</button><div class="small" style="color:#fff;margin-top:8px">1. Go to M-Pesa → Lipa Na M-Pesa → Buy Goods & Services<br>2. Till: <b>6636264</b> • Amount: as above<br>3. Enter M-Pesa Code below</div></div>
+<label>M-Pesa Transaction Code (e.g. QK12345678)</label><input id="mpesaCode" placeholder="QK..." style="text-transform:uppercase">
+<label>Your Phone for Confirmation</label><input id="mpesaPhone" placeholder="+254..." value="+254">
+</div>
+<div id="otherMethodNote" class="small" style="display:none">Card / Bank / Crypto - Demo: will be added instantly.</div>
+<div class="small" id="modalNote"></div>
+<div class="row" style="margin-top:12px"><button class="depbtn" id="modalConfirm" onclick="confirmMoney()">Confirm</button><button style="flex:1;background:#444;color:#fff;border:0;padding:14px;border-radius:10px;font-weight:bold" onclick="closeModal()">Cancel</button></div>
+<div class="small" style="margin-top:10px">⚠️ Demo: For M-Pesa, any code starting with Q + 10 chars is accepted. Real auto-check needs Daraja backend - ask me for it when ready.</div>
+</div></div>
+
+<!-- KYC -->
 <div id="kycModal" class="modal"><div class="modalbox"><h2>🛂 KYC Verification</h2><div class="small">Required for Real account withdrawals</div>
 <div class="step">1️⃣ Phone Number</div>
 <label>Phone e.g. +254712345678</label><input id="kycPhone" placeholder="+254..." value="+254">
@@ -72,7 +94,9 @@ canvas{width:100%;display:block;border-radius:8px;background:#0d1428}
 <button class="kycbtn" style="background:#00d084" onclick="submitKYC()">✅ Submit for Verification</button>
 <button class="kycbtn" style="background:#444;color:#fff" onclick="closeKYC()">Close</button>
 </div></div>
-<div id="inviteModal" class="modal"><div class="modalbox"><h2>🎁 Invite & Earn</h2><p class="small">Share your link. When friend joins + deposits, you get <b style="color:#00d084">$5 bonus</b> (demo).</p>
+
+<!-- INVITE -->
+<div id="inviteModal" class="modal"><div class="modalbox"><h2>🎁 Invite & Earn</h2><p class="small">Share your link. When friend joins + deposits, you get <b style="color:#00d084">$5 bonus</b>.</p>
 <label>Your Referral Link</label><div class="linkbox" id="refLink">...</div>
 <button class="kycbtn" style="background:#00d084" onclick="copyLink()">📋 Copy Link</button>
 <a id="waShare" href="#" target="_blank" style="text-decoration:none"><button class="kycbtn" style="background:#25D366;color:#fff">💬 Share on WhatsApp</button></a>
@@ -81,15 +105,18 @@ canvas{width:100%;display:block;border-radius:8px;background:#0d1428}
 <button class="kycbtn" style="background:#7b61ff" onclick="simulateInvite()">+ Simulate Friend Joined (Demo)</button>
 <button class="kycbtn" style="background:#444;color:#fff" onclick="closeInvite()">Close</button>
 </div></div>
+
 <div id="app">
-<h1>FBS FX</h1>
-<p>Live Forex - <span id="jsStatus" style="color:#ff3b3b">JS LOADING...</span></p>
+<h1>FBS FX <span id="liveBadge" class="liveDot" style="color:#ffaa00">● SIMULATED</span></h1>
+<p>Live Forex - <span id="jsStatus" style="color:#ff3b3b">JS LOADING...</span> • <span class="small" id="lastUpdate">Last update: -</span></p>
 <div class="acct"><button id="btnDemo" class="activeDemo" onclick="switchAccount('demo')">🟢 DEMO</button><button id="btnReal" onclick="switchAccount('real')">🟠 REAL</button></div>
 <div class="card"><b><span id="acctLabel">Demo</span> Balance: $<span id="bal">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span><br><span class="small" id="todayPnl">Today Profit: $0.00</span>
 <div class="small" style="margin-top:8px">KYC: <span id="kycBadge" class="badge badge-not">NOT VERIFIED</span> <span id="kycShort" class="small"></span></div>
+<div class="small" style="margin-top:4px">💚 M-Pesa Till: <b style="color:#00d084">6636264</b> • Tap Deposit → M-Pesa Till</div>
 <div class="row" style="margin-top:12px"><button class="depbtn" onclick="openMoney('deposit')">⬆ Deposit</button><button class="withbtn" onclick="openMoney('withdraw')">⬇ Withdraw</button></div>
 <button class="kycbtn" onclick="openKYC()">🛂 Verify KYC - Phone + ID</button>
 <button class="invitebtn" onclick="openInvite()">🎁 Invite Friends - Earn $5</button>
+<button class="kycbtn" style="background:#ff3b3b;color:#fff" onclick="resetDemo()">🔄 Reset Demo Balance</button>
 </div>
 <div id="list">
 <div class="card" onclick="openDetail('EUR/USD')"><b>EUR/USD</b> - <span id="p0">$1.0850</span> <span id="chg0" class="small"></span><canvas class="miniCanvas" id="mini0" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
@@ -109,6 +136,9 @@ document.getElementById('jsStatus').innerText='JS WORKING ✓';
 document.getElementById('jsStatus').style.color='#00d084';
 function showErr(m){ var e=document.getElementById('err'); e.style.display='block'; e.innerText='Error: '+m; }
 try{
+// ===== 1. SAVE - localStorage =====
+function loadLS(k,d){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function saveLS(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 var assets=[
 {name:'EUR/USD',price:1.0850,open:1.0850,candles:[]},
 {name:'GBP/USD',price:1.27,open:1.27,candles:[]},
@@ -120,16 +150,16 @@ var assets=[
 {name:'AUD/USD',price:0.65,open:0.65,candles:[]},
 {name:'USD/CHF',price:0.88,open:0.88,candles:[]}
 ];
-var selected=null, balances={demo:10000,real:0}, accountMode='demo', trades=[], closedTrades=[], moneyTxns=[], lot=0.01, timeframe='1M', tickCount=0, currentTab='open', moneyType='deposit';
-var kyc={phone:'',phoneVerified:false,idFront:false,idBack:false,status:'NOT_VERIFIED'};
-var refCode='FBS'+Math.floor(1000+Math.random()*9000);
-var invites=0, inviteEarned=0;
+var selected=null, balances=loadLS('fbs_balances',{demo:10000,real:0}), accountMode=loadLS('fbs_mode','demo'), trades=loadLS('fbs_trades',[]), closedTrades=loadLS('fbs_closed',[]), moneyTxns=loadLS('fbs_txns',[]), lot=0.01, timeframe='1M', tickCount=0, currentTab='open', moneyType='deposit', chartType=loadLS('fbs_chartType','candles'), visibleCandles=loadLS('fbs_zoom',30), isLive=false;
+var kyc=loadLS('fbs_kyc',{phone:'',phoneVerified:false,idFront:false,idBack:false,status:'NOT_VERIFIED'});
+var refCode=loadLS('fbs_ref',null); if(!refCode){ refCode='FBS'+Math.floor(1000+Math.random()*9000); saveLS('fbs_ref',refCode); }
+var invites=loadLS('fbs_invites',0), inviteEarned=loadLS('fbs_inviteEarned',0);
 var tfTicks={'1M':2,'5M':5,'15M':10,'1H':20,'1D':40};
-// More realistic candles: trending + volatility
+function saveAll(){ saveLS('fbs_balances',balances); saveLS('fbs_mode',accountMode); saveLS('fbs_trades',trades); saveLS('fbs_closed',closedTrades); saveLS('fbs_txns',moneyTxns); saveLS('fbs_kyc',kyc); saveLS('fbs_invites',invites); saveLS('fbs_inviteEarned',inviteEarned); saveLS('fbs_chartType',chartType); saveLS('fbs_zoom',visibleCandles); }
 for(var ai=0;ai<assets.length;ai++){ var a=assets[ai]; var p=a.price; var trend=(Math.random()-0.5)*0.001;
- for(var i=0;i<30;i++){ var o=p; var vol=Math.abs(p)*0.0012; var c=o+trend*p+(Math.random()-0.48)*vol*2; var h=Math.max(o,c)+Math.random()*vol*0.6; var l=Math.min(o,c)-Math.random()*vol*0.6; a.candles.push({o:o,h:h,l:l,c:c}); p=c; } a.price=p; }
+ for(var i=0;i<40;i++){ var o=p; var vol=Math.abs(p)*0.0012; var c=o+trend*p+(Math.random()-0.48)*vol*2; var h=Math.max(o,c)+Math.random()*vol*0.6; var l=Math.min(o,c)-Math.random()*vol*0.6; a.candles.push({o:o,h:h,l:l,c:c}); p=c; } a.price=p; a.open=a.candles[0].o; }
 function getBalance(){ return balances[accountMode]; }
-function setBalance(v){ balances[accountMode]=v; }
+function setBalance(v){ balances[accountMode]=v; saveAll(); }
 function getAsset(n){ for(var i=0;i<assets.length;i++) if(assets[i].name===n) return assets[i]; return null; }
 function mult(name){ if(name==='GOLD') return 1; if(name==='BTC/USD') return 0.1; if(name==='USD/KES') return 0.5; if(name.indexOf('JPY')>=0) return 10; return 100; }
 function fmt(name,price){ if(name==='BTC/USD') return price.toFixed(0); if(name==='USD/KES'||name==='USD/JPY'||name==='GBP/JPY'||name==='GOLD') return price.toFixed(2); return price.toFixed(4); }
@@ -145,48 +175,77 @@ function updateKYCUI(){
  var ps=document.getElementById('phoneStatus'); if(ps) ps.innerText=kyc.phoneVerified?'📱 Phone: VERIFIED ✓ '+kyc.phone:'📱 Phone: Not Verified';
 }
 function switchAccount(mode){
- accountMode=mode;
+ accountMode=mode; saveAll();
  var d=document.getElementById('btnDemo'); var r=document.getElementById('btnReal');
  if(d) d.className=mode==='demo'?'activeDemo':''; if(r) r.className=mode==='real'?'activeReal':'';
  var lbl=document.getElementById('acctLabel'); if(lbl) lbl.innerText=mode==='demo'?'Demo':'Real';
  if(selected) openDetail(selected); else renderList();
- if(mode==='real' && kyc.status!=='VERIFIED'){ setTimeout(function(){ alert('You are on REAL account.\nKYC is required to withdraw.\nTap "Verify KYC" to verify phone + ID.'); },300); }
+ if(mode==='real' && kyc.status!=='VERIFIED'){ setTimeout(function(){ alert('You are on REAL account.\nKYC is required to withdraw.'); },300); }
 }
-// ===== REAL BROKER CANDLE CHART - CANVAS =====
+function resetDemo(){ if(confirm('Reset DEMO balance to $10,000?')){ balances.demo=10000; saveAll(); renderList(); alert('Demo reset to $10,000'); } }
+// ===== 2. REAL LIVE PRICES =====
+async function fetchLive(){
+ try{
+  var res=await fetch('https://open.er-api.com/v6/latest/USD'); var data=await res.json(); if(!data||!data.rates) throw new Error('no rates');
+  var r=data.rates;
+  // USD base: EUR/USD = 1 / USD->EUR? er-api: rates.EUR = EUR per 1 USD, so EUR/USD = 1/rates.EUR
+  function setP(name, val){ var a=getAsset(name); if(!a||!val||!isFinite(val)) return; var old=a.price; a.price=val; var last=a.candles[a.candles.length-1]; last.c=val; if(val>last.h) last.h=val; if(val<last.l) last.l=val; }
+  if(r.EUR) setP('EUR/USD', 1/r.EUR);
+  if(r.GBP) setP('GBP/USD', 1/r.GBP);
+  if(r.JPY) setP('USD/JPY', r.JPY);
+  if(r.KES) setP('USD/KES', r.KES);
+  if(r.AUD) setP('AUD/USD', 1/r.AUD);
+  if(r.CHF) setP('USD/CHF', r.CHF);
+  if(r.GBP&&r.JPY) setP('GBP/JPY', r.JPY/r.GBP);
+  try{ var b=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'); var bj=await b.json(); if(bj.price) setP('BTC/USD', parseFloat(bj.price)); }catch(e){}
+  try{ var g=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT'); var gj=await g.json(); if(gj.price) setP('GOLD', parseFloat(gj.price)); }catch(e){}
+  isLive=true; var lb=document.getElementById('liveBadge'); if(lb){ lb.innerText='● LIVE'; lb.style.color='#00d084'; }
+  var lu=document.getElementById('lastUpdate'); if(lu) lu.innerText='Last update: '+new Date().toLocaleTimeString();
+  if(selected) openDetail(selected); else renderList();
+ }catch(e){ isLive=false; }
+}
+fetchLive(); setInterval(fetchLive, 15000);
+// ===== 3. CHART - Candles / Line / Area + Zoom =====
+function setChartType(t){ chartType=t; saveAll(); if(selected) openDetail(selected); }
+function zoomChart(dir){ visibleCandles=Math.max(10, Math.min(60, visibleCandles+dir)); saveAll(); if(selected) openDetail(selected); }
 function drawCandles(canvasId, candles, showPrice){
  var cv=document.getElementById(canvasId); if(!cv||!candles.length) return;
+ var show=candles.slice(-visibleCandles); if(canvasId.indexOf('mini')===0) show=candles.slice(-22);
  var dpr=window.devicePixelRatio||1;
  var w=cv.clientWidth||340; var h=cv.clientHeight|| (canvasId.indexOf('mini')===0?60:280);
  if(cv.width!==w*dpr){ cv.width=w*dpr; cv.height=h*dpr; }
  var ctx=cv.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
  ctx.clearRect(0,0,w,h);
- // padding for price labels on right
  var padR=showPrice?52:4, padL=4, padT=8, padB=6;
  var chartW=w-padL-padR, chartH=h-padT-padB;
  var mn=1e18, mx=-1e18;
- for(var i=0;i<candles.length;i++){ if(candles[i].l<mn) mn=candles[i].l; if(candles[i].h>mx) mx=candles[i].h; }
+ for(var i=0;i<show.length;i++){ if(show[i].l<mn) mn=show[i].l; if(show[i].h>mx) mx=show[i].h; }
  var rg=(mx-mn)||1; mn-=rg*0.08; mx+=rg*0.08; rg=mx-mn;
  function y(v){ return padT + (1-(v-mn)/rg)*chartH; }
- // grid + price labels
  ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.fillStyle='#888'; ctx.font='10px Arial'; ctx.textAlign='left'; ctx.lineWidth=1;
  for(var g=0;g<4;g++){ var gy=padT+ (g/3)*chartH; ctx.beginPath(); ctx.moveTo(padL,gy); ctx.lineTo(padL+chartW,gy); ctx.stroke();
   if(showPrice){ var pv=mx-(g/3)*rg; ctx.fillText(pv.toFixed(4), padL+chartW+4, gy+3); } }
- var step=chartW/candles.length; var bodyW=Math.max(3, step*0.65);
- for(var j=0;j<candles.length;j++){
-  var k=candles[j]; var x=padL + j*step + step/2;
-  var up=k.c>=k.o; var col=up?'#26a69a':'#ef5350'; var colFill=up?'#26a69a':'#ef5350';
-  var yH=y(k.h), yL=y(k.l), yO=y(k.o), yC=y(k.c);
-  // wick - 1px centered
-  ctx.strokeStyle=col; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yL); ctx.stroke();
-  // body - real broker style
-  var top=Math.min(yO,yC); var bh=Math.max(1.5, Math.abs(yC-yO));
-  ctx.fillStyle=colFill; ctx.fillRect(x-bodyW/2, top, bodyW, bh);
-  // thin border for crisp look
-  ctx.strokeStyle=col; ctx.lineWidth=0.5; ctx.strokeRect(x-bodyW/2, top, bodyW, bh);
+ if(chartType!=='candles' && showPrice){
+  // LINE / AREA
+  ctx.beginPath(); var firstY=y(show[0].c); ctx.moveTo(padL, firstY);
+  for(var li=1;li<show.length;li++){ var lx=padL + (li/(show.length-1))*chartW; ctx.lineTo(lx, y(show[li].c)); }
+  if(chartType==='area'){ ctx.lineTo(padL+chartW, padT+chartH); ctx.lineTo(padL, padT+chartH); ctx.closePath(); ctx.fillStyle='rgba(0,208,132,0.15)'; ctx.fill(); ctx.beginPath(); ctx.moveTo(padL, firstY); for(var li2=1;li2<show.length;li2++){ var lx2=padL + (li2/(show.length-1))*chartW; ctx.lineTo(lx2, y(show[li2].c)); } }
+  ctx.strokeStyle='#00d084'; ctx.lineWidth=2; ctx.stroke();
+  // dots
+  ctx.fillStyle='#00d084'; for(var di=0;di<show.length;di++){ var dx=padL + (di/(show.length-1))*chartW; ctx.beginPath(); ctx.arc(dx, y(show[di].c), 2, 0, Math.PI*2); ctx.fill(); }
+ } else {
+  var step=chartW/show.length; var bodyW=Math.max(3, step*0.65);
+  for(var j=0;j<show.length;j++){
+   var k=show[j]; var x=padL + j*step + step/2;
+   var up=k.c>=k.o; var col=up?'#26a69a':'#ef5350';
+   var yH=y(k.h), yL=y(k.l), yO=y(k.o), yC=y(k.c);
+   ctx.strokeStyle=col; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yL); ctx.stroke();
+   var top=Math.min(yO,yC); var bh=Math.max(1.5, Math.abs(yC-yO));
+   ctx.fillStyle=col; ctx.fillRect(x-bodyW/2, top, bodyW, bh);
+  }
  }
- // last price line
  if(showPrice){
-  var last=candles[candles.length-1].c; var ly=y(last); var lcol=last>=candles[candles.length-1].o?'#26a69a':'#ef5350';
+  var last=show[show.length-1].c; var ly=y(last); var lcol=last>=show[show.length-1].o?'#26a69a':'#ef5350';
   ctx.strokeStyle=lcol; ctx.setLineDash([4,4]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(padL,ly); ctx.lineTo(padL+chartW,ly); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle=lcol; ctx.fillRect(padL+chartW, ly-9, padR, 18);
   ctx.fillStyle='#000'; ctx.font='bold 10px Arial'; ctx.fillText(last.toFixed(4), padL+chartW+4, ly+3);
@@ -194,9 +253,7 @@ function drawCandles(canvasId, candles, showPrice){
 }
 function tradeRow(t,i){
  var p=calcProfit(t); var col=p>=0?'#00d084':'#ff3b3b';
- var extra='';
- if(t.tp) extra+='<br><span class="small">TP: $'+fmt(t.name,t.tp)+'</span>';
- if(t.sl) extra+='<br><span class="small">SL: $'+fmt(t.name,t.sl)+'</span>';
+ var extra=''; if(t.tp) extra+='<br><span class="small">TP: $'+fmt(t.name,t.tp)+'</span>'; if(t.sl) extra+='<br><span class="small">SL: $'+fmt(t.name,t.sl)+'</span>';
  return '<div class="trade"><div class="trade-info"><b>'+t.type+' '+t.name+' '+t.lot+' lot</b><br><span class="small">@ $'+fmt(t.name,t.entry)+' &nbsp; <span style="color:'+col+'">'+(p>=0?'+':'')+'$'+p.toFixed(2)+'</span></span>'+extra+'</div><button class="closebtn" onclick="closeTrade('+i+')">Close</button></div>';
 }
 function histRow(h){
@@ -206,7 +263,8 @@ function histRow(h){
 }
 function txnRow(tx){
  var isDep=tx.type==='deposit'; var badge=isDep?'<span class="badge badge-dep">DEPOSIT</span>':'<span class="badge badge-with">WITHDRAW</span>';
- return '<div class="hist"><b>'+(isDep?'⬆ Deposit':'⬇ Withdraw')+' $'+tx.amount.toFixed(2)+'</b> '+badge+'<br><span class="small">['+tx.account+'] '+tx.method+' • Balance after: $'+tx.after.toFixed(2)+'</span></div>';
+ var extra=tx.mpesaCode?' • Code: '+tx.mpesaCode:'';
+ return '<div class="hist"><b>'+(isDep?'⬆ Deposit':'⬇ Withdraw')+' $'+tx.amount.toFixed(2)+'</b> '+badge+'<br><span class="small">['+tx.account+'] '+tx.method+extra+' • Balance after: $'+tx.after.toFixed(2)+'</span></div>';
 }
 function renderTradesArea(){
  var te=document.getElementById('trades'); if(!te) return;
@@ -226,29 +284,43 @@ function renderList(){
  for(var j=0;j<assets.length;j++){
   var a=assets[j]; var el=document.getElementById('p'+j); if(el) el.innerText='$'+fmt(a.name,a.price);
   var chg=document.getElementById('chg'+j); if(chg){ var pc=((a.price-a.open)/a.open*100); chg.innerText=(pc>=0?'▲ +':'▼ ')+pc.toFixed(2)+'%'; chg.style.color=pc>=0?'#26a69a':'#ef5350'; }
-  drawCandles('mini'+j, a.candles.slice(-22), false);
+  drawCandles('mini'+j, a.candles, false);
  }
  var bal=document.getElementById('bal'); if(bal) bal.innerText=getBalance().toFixed(2);
  var pnl=document.getElementById('pnl'); if(pnl) pnl.innerText='Floating P/L: $'+totalPnl().toFixed(2);
  var tp=document.getElementById('todayPnl'); if(tp) tp.innerText='Today Profit: $'+todayProfit().toFixed(2)+' | Closed: '+closedTrades.length+' trades';
+ var lb=document.getElementById('liveBadge'); if(lb){ lb.innerText=isLive?'● LIVE':'● SIMULATED'; lb.style.color=isLive?'#00d084':'#ffaa00'; }
+ var d=document.getElementById('btnDemo'); var r=document.getElementById('btnReal'); if(d) d.className=accountMode==='demo'?'activeDemo':''; if(r) r.className=accountMode==='real'?'activeReal':'';
+ var lbl=document.getElementById('acctLabel'); if(lbl) lbl.innerText=accountMode==='demo'?'Demo':'Real';
  updateKYCUI(); renderTradesArea();
 }
+// MONEY + MPESA TILL 6636264
+function copyTill(){ if(navigator.clipboard) navigator.clipboard.writeText('6636264').then(function(){ alert('📋 Till Copied: 6636264'); }); else alert('Till: 6636264'); }
+function onMethodChange(){ var m=document.getElementById('moneyMethod').value; var isMpesa=m==='M-Pesa Till'; document.getElementById('mpesaSection').style.display=isMpesa?'block':'none'; document.getElementById('otherMethodNote').style.display=isMpesa?'none':'block'; }
 function openMoney(type){
  moneyType=type;
- if(type==='withdraw' && accountMode==='real' && kyc.status!=='VERIFIED'){ alert('⛔ KYC REQUIRED for Real Withdrawal!\n\nVerify Phone + ID Front + Back first.'); openKYC(); return; }
+ if(type==='withdraw' && accountMode==='real' && kyc.status!=='VERIFIED'){ alert('⛔ KYC REQUIRED for Real Withdrawal!'); openKYC(); return; }
  var m=document.getElementById('modal'); m.className='modal show';
  document.getElementById('modalTitle').innerText=(type==='deposit'?'⬆ Deposit - ':'⬇ Withdraw - ')+(accountMode==='demo'?'DEMO':'REAL');
- document.getElementById('modalNote').innerText=type==='deposit'?'Money will be added to your '+accountMode+' balance instantly (demo).':'You have $'+getBalance().toFixed(2)+' available in '+accountMode+'.';
+ document.getElementById('modalNote').innerText=type==='deposit'?('Deposit to '+accountMode+' via Till 6636264'):'You have $'+getBalance().toFixed(2)+' available in '+accountMode+'. Withdrawal will be sent to your M-Pesa phone.';
  var btn=document.getElementById('modalConfirm'); btn.innerText=type==='deposit'?'Deposit':'Withdraw'; btn.style.background=type==='deposit'?'#00d084':'#ff9800';
+ onMethodChange();
 }
 function closeModal(){ document.getElementById('modal').className='modal'; }
 function setAmt(v){ document.getElementById('moneyAmt').value=v; }
 function confirmMoney(){
  var amt=parseFloat(document.getElementById('moneyAmt').value); var method=document.getElementById('moneyMethod').value;
+ var code=(document.getElementById('mpesaCode').value||'').toUpperCase().trim(); var phone=document.getElementById('mpesaPhone').value||'';
  if(!amt||amt<=0){ alert('Enter amount more than 0'); return; }
  if(moneyType==='withdraw' && amt>getBalance()){ alert('Not enough balance! You have $'+getBalance().toFixed(2)); return; }
- if(moneyType==='deposit'){ setBalance(getBalance()+amt); moneyTxns.push({type:'deposit',amount:amt,method:method,after:getBalance(),account:accountMode}); alert('✅ Deposited $'+amt.toFixed(2)+' via '+method+' to '+accountMode.toUpperCase()+'\nNew Balance: $'+getBalance().toFixed(2)); }
- else { setBalance(getBalance()-amt); moneyTxns.push({type:'withdraw',amount:amt,method:method,after:getBalance(),account:accountMode}); alert('✅ Withdrawal $'+amt.toFixed(2)+' via '+method+' requested\nNew Balance: $'+getBalance().toFixed(2)); }
+ if(method==='M-Pesa Till' && moneyType==='deposit'){
+  if(!code||code.length<8||code[0]!=='Q'){ alert('⛔ Enter valid M-Pesa Code!\n\nExample: QK12345678\n\nYou get this SMS after sending to Till 6636264.'); return; }
+  // prevent duplicate code reuse
+  for(var i=0;i<moneyTxns.length;i++){ if(moneyTxns[i].mpesaCode===code){ alert('⛔ This M-Pesa Code was already used! Enter a new code.'); return; } }
+ }
+ if(method==='M-Pesa Till' && moneyType==='withdraw' && (!phone||phone.length<10)){ alert('Enter your M-Pesa phone for withdrawal'); return; }
+ if(moneyType==='deposit'){ setBalance(getBalance()+amt); moneyTxns.push({type:'deposit',amount:amt,method:method,after:getBalance(),account:accountMode,mpesaCode:code||'',phone:phone}); saveAll(); alert('✅ Deposited $'+amt.toFixed(2)+' via '+method+' Till 6636264\nCode: '+code+'\nNew Balance: $'+getBalance().toFixed(2)); }
+ else { setBalance(getBalance()-amt); moneyTxns.push({type:'withdraw',amount:amt,method:method,after:getBalance(),account:accountMode,mpesaCode:'',phone:phone}); saveAll(); alert('✅ Withdrawal $'+amt.toFixed(2)+' via '+method+' requested\nTo: '+phone+'\nNew Balance: $'+getBalance().toFixed(2)); }
  closeModal(); if(selected) openDetail(selected); else renderList();
 }
 function openKYC(){ document.getElementById('kycModal').className='modal show'; updateKYCUI(); }
@@ -256,12 +328,12 @@ function closeKYC(){ document.getElementById('kycModal').className='modal'; }
 function sendOTP(){
  var ph=document.getElementById('kycPhone').value;
  if(!ph||ph.length<10){ alert('Enter valid phone number e.g. +254712345678'); return; }
- kyc.phone=ph; document.getElementById('otpBox').style.display='block';
+ kyc.phone=ph; saveAll(); document.getElementById('otpBox').style.display='block';
  alert('📲 OTP sent to '+ph+'\n\nDEMO CODE: 123456');
 }
 function verifyOTP(){
  var code=document.getElementById('otpInput').value;
- if(code==='123456'){ kyc.phoneVerified=true; updateKYCUI(); alert('✅ Phone Verified!\n'+kyc.phone); }
+ if(code==='123456'){ kyc.phoneVerified=true; saveAll(); updateKYCUI(); alert('✅ Phone Verified!\n'+kyc.phone); }
  else alert('❌ Wrong code. Demo code is 123456');
 }
 function uploadID(input, side){
@@ -271,7 +343,7 @@ function uploadID(input, side){
   var img=document.getElementById(side==='front'?'frontImg':'backImg'); img.src=e.target.result; img.style.display='block';
   var lab=document.getElementById(side==='front'?'frontLabel':'backLabel'); lab.innerText='✅ '+side.toUpperCase()+' Uploaded';
   var st=document.getElementById(side==='front'?'frontStatus':'backStatus'); st.innerText='Uploaded: '+file.name; st.style.color='#00d084';
-  if(side==='front') kyc.idFront=true; else kyc.idBack=true;
+  if(side==='front') kyc.idFront=true; else kyc.idBack=true; saveAll();
   document.getElementById('kycStatusText').innerText='Phone: '+(kyc.phoneVerified?'✅':'❌')+' | ID Front: '+(kyc.idFront?'✅':'❌')+' | ID Back: '+(kyc.idBack?'✅':'❌');
  };
  reader.readAsDataURL(file);
@@ -280,9 +352,9 @@ function submitKYC(){
  if(!kyc.phoneVerified){ alert('⛔ Verify phone first! Send OTP + enter 123456'); return; }
  if(!kyc.idFront){ alert('⛔ Upload ID FRONT photo first'); return; }
  if(!kyc.idBack){ alert('⛔ Upload ID BACK photo first'); return; }
- kyc.status='PENDING'; updateKYCUI();
+ kyc.status='PENDING'; saveAll(); updateKYCUI();
  document.getElementById('kycStatusText').innerText='⏳ Verifying... please wait 3 seconds';
- setTimeout(function(){ kyc.status='VERIFIED'; updateKYCUI(); document.getElementById('kycStatusText').innerText='✅ KYC VERIFIED! You can now withdraw from REAL account.'; alert('🎉 KYC VERIFIED!'); closeKYC(); if(selected) openDetail(selected); else renderList(); },3000);
+ setTimeout(function(){ kyc.status='VERIFIED'; saveAll(); updateKYCUI(); document.getElementById('kycStatusText').innerText='✅ KYC VERIFIED!'; alert('🎉 KYC VERIFIED!'); closeKYC(); if(selected) openDetail(selected); else renderList(); },3000);
 }
 function getRefLink(){ return window.location.origin + window.location.pathname + '?ref=' + refCode; }
 function openInvite(){
@@ -290,7 +362,7 @@ function openInvite(){
  document.getElementById('refLink').innerText=getRefLink();
  document.getElementById('inviteCount').innerText=invites;
  document.getElementById('inviteEarned').innerText='$'+inviteEarned.toFixed(2);
- var msg=encodeURIComponent('Join me on FBS FX - Trade Forex, Gold & BTC! Use my link: '+getRefLink());
+ var msg=encodeURIComponent('Join me on FBS FX - Trade Forex, Gold & BTC! Till 6636264 - Use my link: '+getRefLink());
  document.getElementById('waShare').href='https://wa.me/?text='+msg;
 }
 function closeInvite(){ document.getElementById('inviteModal').className='modal'; }
@@ -301,27 +373,29 @@ function copyLink(){
 }
 function simulateInvite(){
  invites++; inviteEarned+=5; setBalance(getBalance()+5);
- moneyTxns.push({type:'deposit',amount:5,method:'Invite Bonus',after:getBalance(),account:accountMode});
+ moneyTxns.push({type:'deposit',amount:5,method:'Invite Bonus',after:getBalance(),account:accountMode,mpesaCode:'',phone:''}); saveAll();
  document.getElementById('inviteCount').innerText=invites;
  document.getElementById('inviteEarned').innerText='$'+inviteEarned.toFixed(2);
- alert('🎉 Friend joined via your link!\n+$5 Bonus added\nNew Balance: $'+getBalance().toFixed(2));
+ alert('🎉 Friend joined!\n+$5 Bonus\nNew Balance: $'+getBalance().toFixed(2));
  if(selected) openDetail(selected); else renderList();
 }
 function tfBar(){ var h='<div class="tf">'; var tfs=['1M','5M','15M','1H','1D']; for(var i=0;i<tfs.length;i++){ h+='<button class="'+(tfs[i]===timeframe?'active':'')+'" onclick="setTF(\''+tfs[i]+'\')">'+tfs[i]+'</button>'; } return h+'</div>'; }
+function toolBar(){
+ return '<div class="tool"><button class="'+(chartType==='candles'?'active':'')+'" onclick="setChartType(\'candles\')">🕯 Candles</button><button class="'+(chartType==='line'?'active':'')+'" onclick="setChartType(\'line\')">📈 Line</button><button class="'+(chartType==='area'?'active':'')+'" onclick="setChartType(\'area\')">📊 Area</button><button onclick="zoomChart(-5)">🔍 -</button><button onclick="zoomChart(5)">🔍 +</button></div>';
+}
 function openDetail(name){
  selected=name; var a=getAsset(name);
  var ch=((a.price-a.open)/a.open*100).toFixed(2); var cls=ch>=0?'up':'down';
  var pp=pairPnl(name); var pcol=pp>=0?'#00d084':'#ff3b3b';
  var html='<button class="back" onclick="back()">← Back</button><h1 style="margin-top:12px">'+name+' - '+accountMode.toUpperCase()+'</h1>';
- html+='<div class="card"><div style="display:flex;justify-content:space-between"><div><div class="big">$'+fmt(name,a.price)+'</div><div class="'+cls+'">'+ch+'% today</div></div><div style="text-align:right"><div class="small">'+accountMode.toUpperCase()+' Balance</div><b>$'+getBalance().toFixed(2)+'</b><div class="small">P/L '+name+'</div><b style="color:'+pcol+'">'+(pp>=0?'+':'')+'$'+pp.toFixed(2)+'</b></div></div>'+tfBar()+'<div class="chartWrap"><canvas class="bigCanvas" id="bigchart" width="340" height="280"></canvas><div class="legend"><span>O '+fmt(name,a.candles[a.candles.length-1].o)+' &nbsp; H '+fmt(name,a.candles[a.candles.length-1].h)+' &nbsp; L '+fmt(name,a.candles[a.candles.length-1].l)+' &nbsp; C '+fmt(name,a.candles[a.candles.length-1].c)+'</span><span>'+timeframe+'</span></div></div><div class="small" style="margin-top:6px">TradingView style - Green Up, Red Down</div>';
- html+='<div class="pnl-box"><span>Total Floating P/L</span><b style="color:'+(totalPnl()>=0?'#00d084':'#ff3b3b')+'">'+(totalPnl()>=0?'+':'')+'$'+totalPnl().toFixed(2)+'</b></div><div class="row" style="margin-top:12px"><button class="depbtn" onclick="openMoney(\'deposit\')">⬆ Deposit</button><button class="withbtn" onclick="openMoney(\'withdraw\')">⬇ Withdraw</button></div><button class="kycbtn" onclick="openKYC()">🛂 Verify KYC</button><button class="invitebtn" onclick="openInvite()">🎁 Invite - Earn $5</button></div>';
+ html+='<div class="card"><div style="display:flex;justify-content:space-between"><div><div class="big">$'+fmt(name,a.price)+'</div><div class="'+cls+'">'+ch+'% today</div><div class="small" style="color:'+(isLive?'#00d084':'#ffaa00')+'">'+(isLive?'● LIVE':'● SIMULATED')+'</div></div><div style="text-align:right"><div class="small">'+accountMode.toUpperCase()+' Balance</div><b>$'+getBalance().toFixed(2)+'</b><div class="small">P/L '+name+'</div><b style="color:'+pcol+'">'+(pp>=0?'+':'')+'$'+pp.toFixed(2)+'</b></div></div>'+tfBar()+toolBar()+'<div class="chartWrap"><canvas class="bigCanvas" id="bigchart" width="340" height="280"></canvas><div class="legend"><span>O '+fmt(name,a.candles[a.candles.length-1].o)+' &nbsp; H '+fmt(name,a.candles[a.candles.length-1].h)+' &nbsp; L '+fmt(name,a.candles[a.candles.length-1].l)+' &nbsp; C '+fmt(name,a.candles[a.candles.length-1].c)+'</span><span>'+timeframe+' • '+visibleCandles+' candles</span></div></div><div class="small" style="margin-top:6px">Candles / Line / Area + Zoom - like real broker</div>';
+ html+='<div class="pnl-box"><span>Total Floating P/L</span><b style="color:'+(totalPnl()>=0?'#00d084':'#ff3b3b')+'">'+(totalPnl()>=0?'+':'')+'$'+totalPnl().toFixed(2)+'</b></div><div class="row" style="margin-top:12px"><button class="depbtn" onclick="openMoney(\'deposit\')">⬆ Deposit</button><button class="withbtn" onclick="openMoney(\'withdraw\')">⬇ Withdraw</button></div><div class="small" style="margin-top:6px;text-align:center">M-Pesa Till: <b style="color:#00d084">6636264</b></div><button class="kycbtn" onclick="openKYC()">🛂 Verify KYC</button><button class="invitebtn" onclick="openInvite()">🎁 Invite - Earn $5</button></div>';
  html+='<div class="card"><b>Lot Size</b><input type="number" id="lotIn" value="'+lot+'" step="0.01" min="0.01" onchange="lot=parseFloat(this.value)">';
  html+='<div class="row"><div style="flex:1"><label>Take Profit (optional)</label><input type="number" id="tpIn" placeholder="e.g. '+fmt(name,a.price*1.01)+'"></div><div style="flex:1"><label>Stop Loss (optional)</label><input type="number" id="slIn" placeholder="e.g. '+fmt(name,a.price*0.99)+'"></div></div>';
  html+='<div class="small">BUY: TP ABOVE price, SL BELOW price<br>SELL: TP BELOW price, SL ABOVE price</div></div>';
  html+='<div class="row"><button class="buy" onclick="openTrade(\'BUY\')">BUY<br><span style="font-size:12px">at $'+fmt(name,a.price)+'</span></button><button class="sell" onclick="openTrade(\'SELL\')">SELL<br><span style="font-size:12px">at $'+fmt(name,a.price)+'</span></button></div>';
  html+='<div class="card"><div class="tab"><button id="tabOpen" class="'+(currentTab==='open'?'active':'')+'" onclick="showTab(\'open\')">Open Trades</button><button id="tabHist" class="'+(currentTab==='hist'?'active':'')+'" onclick="showTab(\'hist\')">History</button><button id="tabTrans" class="'+(currentTab==='trans'?'active':'')+'" onclick="showTab(\'trans\')">Money</button></div><div id="trades">No trades</div></div>';
  document.getElementById('app').innerHTML=html;
- // draw after DOM exists - this was the old bug
  requestAnimationFrame(function(){ drawCandles('bigchart', a.candles, true); });
  var te=document.getElementById('trades');
  if(currentTab==='open'){ var th=''; var found=false; for(var ti=0;ti<trades.length;ti++) if(trades[ti].name===name){ found=true; th+=tradeRow(trades[ti],ti); } te.innerHTML=found?th:'No trades on '+name+' yet'; }
@@ -336,15 +410,15 @@ function openTrade(type){
  var tpEl=document.getElementById('tpIn'); var slEl=document.getElementById('slIn');
  var tp=tpEl&&tpEl.value?parseFloat(tpEl.value):null;
  var sl=slEl&&slEl.value?parseFloat(slEl.value):null;
- if(tp && ((type==='BUY'&&tp<=a.price)||(type==='SELL'&&tp>=a.price))) { alert('Take Profit wrong side! BUY = ABOVE price, SELL = BELOW price'); return; }
- if(sl && ((type==='BUY'&&sl>=a.price)||(type==='SELL'&&sl<=a.price))) { alert('Stop Loss wrong side! BUY = BELOW price, SELL = ABOVE price'); return; }
- trades.push({type:type,name:a.name,entry:a.price,lot:lot,tp:tp,sl:sl});
+ if(tp && ((type==='BUY'&&tp<=a.price)||(type==='SELL'&&tp>=a.price))) { alert('Take Profit wrong side!'); return; }
+ if(sl && ((type==='BUY'&&sl>=a.price)||(type==='SELL'&&sl<=a.price))) { alert('Stop Loss wrong side!'); return; }
+ trades.push({type:type,name:a.name,entry:a.price,lot:lot,tp:tp,sl:sl}); saveAll();
  openDetail(a.name);
 }
 function doClose(i, reason){
  var t=trades[i]; var a=getAsset(t.name); var prof=calcProfit(t); setBalance(getBalance()+prof);
  closedTrades.push({type:t.type,name:t.name,entry:t.entry,exit:a.price,lot:t.lot,profit:prof,reason:reason,account:accountMode});
- trades.splice(i,1);
+ trades.splice(i,1); saveAll();
  if(selected) openDetail(selected); else renderList();
 }
 function closeTrade(i){ doClose(i,'MANUAL'); }
@@ -357,7 +431,7 @@ function checkTPSL(){
 }
 setInterval(function(){
  tickCount++;
- for(var i=0;i<assets.length;i++){ var a=assets[i]; var st=Math.abs(a.price)*0.0005; a.price+=(Math.random()-0.5)*st*2; var last=a.candles[a.candles.length-1]; last.c=a.price; if(a.price>last.h) last.h=a.price; if(a.price<last.l) last.l=a.price; if(tickCount % tfTicks[timeframe]===0){ a.candles.push({o:a.price,h:a.price,l:a.price,c:a.price}); if(a.candles.length>40) a.candles.shift(); } }
+ for(var i=0;i<assets.length;i++){ var a=assets[i]; if(isLive) continue; var st=Math.abs(a.price)*0.0005; a.price+=(Math.random()-0.5)*st*2; var last=a.candles[a.candles.length-1]; last.c=a.price; if(a.price>last.h) last.h=a.price; if(a.price<last.l) last.l=a.price; if(tickCount % tfTicks[timeframe]===0){ a.candles.push({o:a.price,h:a.price,l:a.price,c:a.price}); if(a.candles.length>60) a.candles.shift(); } }
  checkTPSL();
  if(selected) openDetail(selected); else renderList();
 },1000);
@@ -365,4 +439,4 @@ renderList();
 }catch(e){ showErr(e.message); }
 </script>
 </body>
-</html>
+                                                                                                                                      </html>
