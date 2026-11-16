@@ -15,81 +15,31 @@ h1{color:#00d084;margin:0}
 .up{color:#00d084}.down{color:#ff3b3b}
 .back{background:#222;border:0;color:#fff;padding:10px 16px;border-radius:8px}
 canvas.mini{width:100%;height:60px;background:#0a0f1e;border-radius:8px;margin-top:8px}
-canvas.bigchart{width:100%;height:180px;background:#0a0f1e;border-radius:8px}
+canvas.bigchart{width:100%;height:220px;background:#0a0f1e;border-radius:8px}
 input{width:100%;padding:12px;border-radius:8px;border:0;margin:10px 0;font-size:16px;background:#1e2745;color:#fff}
 .top{display:flex;justify-content:space-between;align-items:center}
+.tf{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+.tf button{flex:1;padding:10px 0;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold}
+.tf button.active{background:#00d084;color:#000}
+.tf2{display:flex;gap:6px;margin-top:8px}
+.tf2 button{padding:8px 12px;border:0;border-radius:6px;background:#1e2745;color:#aaa;font-size:12px}
+.tf2 button.active{background:#fff;color:#000}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
 let assets=[
-{name:'EUR/USD',price:1.0850,open:1.0850,history:[]},
-{name:'GBP/USD',price:1.2700,open:1.2700,history:[]},
-{name:'USD/JPY',price:151.20,open:151.20,history:[]},
-{name:'GOLD',price:2350,open:2350,history:[]}
+{name:'EUR/USD',price:1.0850,open:1.0850,candles:[]},
+{name:'GBP/USD',price:1.2700,open:1.2700,candles:[]},
+{name:'USD/JPY',price:151.20,open:151.20,candles:[]},
+{name:'GOLD',price:2350,open:2350,candles:[]}
 ];
-let selected=null, balance=10000, trades=[], lot=0.01;
-assets.forEach(a=>{let p=a.price; for(let i=0;i<30;i++){p+=(Math.random()-0.5)*(a.name==='GOLD'?1:0.0005); a.history.push(p);} a.price=p;});
+let selected=null, balance=10000, trades=[], lot=0.01, timeframe='1M', tickCount=0;
+let tfTicks={'1M':2,'5M':5,'15M':10,'1H':20,'1D':40};
 
-function drawMini(id, history, color){
- let c=document.getElementById(id); if(!c) return;
- let ctx=c.getContext('2d'); let min=Math.min(...history), max=Math.max(...history);
- ctx.clearRect(0,0,c.width,c.height);
- ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2;
- history.forEach((p,i)=>{let x=i/(history.length-1)*c.width; let y=c.height-((p-min)/((max-min)||1))*c.height; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);});
- ctx.stroke();
- // fill under line
- ctx.lineTo(c.width,c.height); ctx.lineTo(0,c.height); ctx.closePath(); ctx.fillStyle=color+'22'; ctx.fill();
-}
-function drawBig(){
- let c=document.getElementById('bigchart'); if(!c) return;
- let a=assets.find(x=>x.name===selected.name); let ch=(a.price-a.open)>=0;
- drawMini('bigchart', a.history, ch?'#00d084':'#ff3b3b');
-}
-
-function renderList(){
- let pnl=0;
- trades.forEach(t=>{let a=assets.find(x=>x.name===t.name); let d=t.type==='BUY'?a.price-t.entry:t.entry-a.price; pnl+=d*(t.name==='GOLD'?1:100)*t.lot*100;});
- document.getElementById('app').innerHTML=`
- <h1>FBS FX</h1><p>Live Forex Prices</p>
- <div class="card"><b>Demo Balance: $${balance.toFixed(2)}</b><br><span class="small">Floating P/L: $${pnl.toFixed(2)}</span><br><span class="small">Tap a pair to trade</span></div>
- ${assets.map((a,i)=>{
-  let ch=((a.price-a.open)/a.open*100).toFixed(2);
-  let col=ch>=0?'#00d084':'#ff3b3b';
-  return `<div class="card" onclick="openDetail('${a.name}')">
-   <div class="top"><b>${a.name}</b><span style="color:${col};font-weight:bold">$${a.price.toFixed(2)} &nbsp; ${ch}%</span></div>
-   <canvas class="mini" id="mini${i}" width="340" height="60"></canvas>
-   <div class="small">Tap to open &gt;</div></div>`;
- }).join('')}
- <div class="card"><h3>Open Trades</h3>${trades.length?trades.map((t,i)=>`<div style="border-top:1px solid #333;padding:8px 0"><b>${t.type} ${t.name} ${t.lot} lot</b> @ $${t.entry.toFixed(2)} <button onclick="closeTrade(${i})" style="float:right;padding:6px 12px">Close</button></div>`).join(''):'No open trades yet'}</div>`;
- assets.forEach((a,i)=>{let ch=(a.price-a.open)>=0; drawMini('mini'+i, a.history, ch?'#00d084':'#ff3b3b');});
-}
-
-function openDetail(name){
- selected={name:name};
- let a=assets.find(x=>x.name===name);
- let ch=((a.price-a.open)/a.open*100).toFixed(2);
- document.getElementById('app').innerHTML=`
- <button class="back" onclick="back()">← Back</button>
- <h1 style="margin-top:12px">${name}</h1>
- <div class="card"><div class="big">$${a.price.toFixed(2)}</div><div class="${ch>=0?'up':'down'}">${ch}% today</div><canvas class="bigchart" id="bigchart" width="340" height="180"></canvas><div class="small">Live chart - updates every second</div></div>
- <div class="card"><b>Lot Size</b><input type="number" value="${lot}" step="0.01" min="0.01" onchange="lot=parseFloat(this.value)"></div>
- <div class="row"><button class="buy" onclick="openTrade('BUY')">BUY<br><span style="font-size:12px">at $${a.price.toFixed(2)}</span></button><button class="sell" onclick="openTrade('SELL')">SELL<br><span style="font-size:12px">at $${a.price.toFixed(2)}</span></button></div>
- <div class="card"><h3>Your ${name} Trades</h3>${trades.filter(t=>t.name===name).length?trades.map((t,i)=>t.name===name?`<div style="border-top:1px solid #333;padding:8px 0"><b>${t.type} ${t.lot} lot</b> @ $${t.entry.toFixed(2)} <button onclick="closeTrade(${i})" style="float:right">Close</button></div>`:'').join(''):'No trades on '+name+' yet'}</div>`;
- drawBig();
-}
-function back(){selected=null;renderList();}
-function openTrade(type){let a=assets.find(x=>x.name===selected.name); trades.push({type:type,name:a.name,entry:a.price,lot:lot}); openDetail(a.name);}
-function closeTrade(i){let t=trades[i]; let a=assets.find(x=>x.name===t.name); let profit=(t.type==='BUY'?a.price-t.entry:t.entry-a.price)*(t.name==='GOLD'?1:100)*t.lot*100; balance+=profit; trades.splice(i,1); if(selected) openDetail(selected.name); else renderList();}
-async function loadRates(){
- try{let r=await fetch('https://open.er-api.com/v6/latest/USD'); let j=await r.json(); if(j.rates){assets[0].price=1/j.rates.EUR; assets[0].open=1/j.rates.EUR; assets[1].price=1/j.rates.GBP; assets[1].open=1/j.rates.GBP; assets[2].price=j.rates.JPY; assets[2].open=j.rates.JPY; if(selected) openDetail(selected.name); else renderList();}}catch(e){}
-}
-setInterval(()=>{
- assets.forEach(a=>{let step=a.name==='GOLD'?0.6:a.name==='USD/JPY'?0.02:0.0003; a.price+=(Math.random()-0.5)*step; a.history.push(a.price); if(a.history.length>30)a.history.shift();});
- if(selected) openDetail(selected.name); else renderList();
-},1000);
-renderList(); loadRates(); setInterval(loadRates,30000);
-</script>
-</body>
-</html>
+// Make initial candles
+assets.forEach(a=>{
+ let p=a.price;
+ for(let i=0;i<24;i++){
+  let o=p; let c=o+(Math.random()-0.5)*(a.name==='GOLD'?3
