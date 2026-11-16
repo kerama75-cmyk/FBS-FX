@@ -33,58 +33,23 @@ label{font-size:13px;color:#aaa}
 </style>
 </head>
 <body>
+<div id="err" style="color:#ff3b3b;background:#300;padding:10px;display:none"></div>
 <div id="app">
 <h1>FBS FX</h1>
 <p>Live Forex - Candlesticks</p>
 <div class="card"><b>Demo Balance: $<span id="bal">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span><br><span class="small" id="todayPnl">Today Profit: $0.00</span></div>
-<div id="list"></div>
-<div class="card"><div class="tab"><button id="tabOpen" class="active" onclick="showTab('open')">Open Trades</button><button id="tabHist" onclick="showTab('hist')">History</button></div><div id="trades">No open trades yet</div></div>
+
+<!-- PAIRS ARE IN HTML SO THEY ALWAYS SHOW -->
+<div id="list">
+<div class="card" onclick="openDetail('EUR/USD')"><b>EUR/USD</b> - <span id="p0">$1.0850</span><br><canvas id="mini0" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('GBP/USD')"><b>GBP/USD</b> - <span id="p1">$1.2700</span><br><canvas id="mini1" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('USD/JPY')"><b>USD/JPY</b> - <span id="p2">$151.20</span><br><canvas id="mini2" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('GOLD')"><b>GOLD</b> - <span id="p3">$2350.00</span><br><canvas id="mini3" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('BTC/USD')"><b>BTC/USD</b> - <span id="p4">$65000</span><br><canvas id="mini4" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('USD/KES')"><b>USD/KES</b> - <span id="p5">$130.50</span><br><canvas id="mini5" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('GBP/JPY')"><b>GBP/JPY</b> - <span id="p6">$192.50</span><br><canvas id="mini6" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('AUD/USD')"><b>AUD/USD</b> - <span id="p7">$0.6500</span><br><canvas id="mini7" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('USD/CHF')"><b>USD/CHF</b> - <span id="p8">$0.8800</span><br><canvas id="mini8" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
 </div>
-<div id="err" style="color:#ff3b3b"></div>
-<script>
-try{
-var assets=[
-{name:'EUR/USD',price:1.0850,open:1.0850,candles:[]},
-{name:'GBP/USD',price:1.2700,open:1.2700,candles:[]},
-{name:'USD/JPY',price:151.20,open:151.20,candles:[]},
-{name:'GOLD',price:2350,open:2350,candles:[]},
-{name:'BTC/USD',price:65000,open:65000,candles:[]},
-{name:'USD/KES',price:130.50,open:130.50,candles:[]},
-{name:'GBP/JPY',price:192.50,open:192.50,candles:[]},
-{name:'AUD/USD',price:0.6500,open:0.6500,candles:[]},
-{name:'USD/CHF',price:0.8800,open:0.8800,candles:[]}
-];
-var selected=null, balance=10000, trades=[], history=[], lot=0.01, timeframe='1M', tickCount=0, currentTab='open';
-var tfTicks={'1M':2,'5M':5,'15M':10,'1H':20,'1D':40};
-for(var ai=0;ai<assets.length;ai++){ var a=assets[ai]; var p=a.price; for(var i=0;i<24;i++){ var o=p; var st=Math.abs(p)*0.002; var c=o+(Math.random()-0.5)*st; var h=Math.max(o,c)+Math.random()*st*0.5; var l=Math.min(o,c)-Math.random()*st*0.5; a.candles.push({o:o,h:h,l:l,c:c}); p=c; } a.price=p; }
 
-function getAsset(n){ for(var i=0;i<assets.length;i++) if(assets[i].name===n) return assets[i]; return null; }
-function mult(name){ if(name==='GOLD') return 1; if(name==='BTC/USD') return 0.1; if(name==='USD/KES') return 0.5; if(name.indexOf('JPY')>=0) return 10; return 100; }
-function fmt(name,price){ if(name==='BTC/USD') return price.toFixed(0); if(name==='USD/KES'||name==='USD/JPY'||name==='GBP/JPY') return price.toFixed(2); if(name==='GOLD') return price.toFixed(2); return price.toFixed(4); }
-function calcProfit(t){ var a=getAsset(t.name); var d=t.type==='BUY'?a.price-t.entry:t.entry-a.price; return d*mult(t.name)*t.lot*100; }
-function totalPnl(){ var s=0; for(var i=0;i<trades.length;i++) s+=calcProfit(trades[i]); return s; }
-function pairPnl(name){ var s=0; for(var i=0;i<trades.length;i++) if(trades[i].name===name) s+=calcProfit(trades[i]); return s; }
-function todayProfit(){ var s=0; for(var i=0;i<history.length;i++) s+=history[i].profit; return s; }
-
-function draw(id, candles){
- var cv=document.getElementById(id); if(!cv) return;
- var ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
- if(!candles.length) return;
- var mn=1e12, mx=-1e12;
- for(var i=0;i<candles.length;i++){ if(candles[i].h>mx) mx=candles[i].h; if(candles[i].l<mn) mn=candles[i].l; }
- var rg=(mx-mn)||1; var w=cv.width/candles.length;
- for(var j=0;j<candles.length;j++){ var k=candles[j]; var x=j*w+w/2; var col=k.c>=k.o?'#00d084':'#ff3b3b';
-  var yH=cv.height-((k.h-mn)/rg)*cv.height; var yL=cv.height-((k.l-mn)/rg)*cv.height;
-  var yO=cv.height-((k.o-mn)/rg)*cv.height; var yC=cv.height-((k.c-mn)/rg)*cv.height;
-  ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yL); ctx.stroke();
-  ctx.fillStyle=col; var top=Math.min(yO,yC); var hh=Math.max(2,Math.abs(yC-yO)); ctx.fillRect(x-w*0.35,top,w*0.7,hh); }
-}
-function tradeRow(t,i){
- var p=calcProfit(t); var col=p>=0?'#00d084':'#ff3b3b';
- var extra='';
- if(t.tp) extra+='<br><span class="small">TP: $'+fmt(t.name,t.tp)+'</span>';
- if(t.sl) extra+='<br><span class="small">SL: $'+fmt(t.name,t.sl)+'</span>';
- return '<div class="trade"><div class="trade-info"><b>'+t.type+' '+t.name+' '+t.lot+' lot</b><br><span class="small">@ $'+fmt(t.name,t.entry)+' &nbsp; <span style="color:'+col+'">'+(p>=0?'+':'')+'$'+p.toFixed(2)+'</span></span>'+extra+'</div><button class="closebtn" onclick="closeTrade('+i+')">Close</button></div>';
-}
-function histRow(h){
- var col=h.profit>=0?'#00d084':'#ff3
+<div class="card"><div class="tab"><button id="tabOpen" class="active" onclick="showTab('open')">Open Trades</button
