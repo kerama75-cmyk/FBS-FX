@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>FBS FX</title>
 <style>
-body{font-family:Arial;background:#0a0f1e;color:#fff;margin:0;padding:16px;padding-bottom:40px}
+body{font-family:Arial;background:#0a0f1e;color:#fff;margin:0;padding:16px}
 h1{color:#00d084;margin:0}
 .card{background:#141b32;padding:16px;border-radius:12px;margin:10px 0}
 .row{display:flex;gap:10px}
@@ -14,32 +14,77 @@ h1{color:#00d084;margin:0}
 .big{font-size:32px;font-weight:bold}
 .up{color:#00d084}.down{color:#ff3b3b}
 .back{background:#222;border:0;color:#fff;padding:10px 16px;border-radius:8px}
-canvas.mini{width:100%;height:60px;background:#0a0f1e;border-radius:8px;margin-top:8px}
-canvas.bigchart{width:100%;height:220px;background:#0a0f1e;border-radius:8px}
-input{width:100%;padding:12px;border-radius:8px;border:0;margin:10px 0;font-size:16px;background:#1e2745;color:#fff}
-.top{display:flex;justify-content:space-between;align-items:center}
-.tf{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}
+canvas{width:100%;background:#0a0f1e;border-radius:8px}
+.tf{display:flex;gap:6px;margin:10px 0}
 .tf button{flex:1;padding:10px 0;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold}
 .tf button.active{background:#00d084;color:#000}
-.tf2{display:flex;gap:6px;margin-top:8px}
-.tf2 button{padding:8px 12px;border:0;border-radius:6px;background:#1e2745;color:#aaa;font-size:12px}
-.tf2 button.active{background:#fff;color:#000}
+input{width:100%;padding:12px;border-radius:8px;border:0;margin:10px 0;font-size:16px;background:#1e2745;color:#fff}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="app"><h1>FBS FX</h1><p>Loading...</p></div>
+<div id="err" style="color:red"></div>
 <script>
-let assets=[
+window.onerror=function(m){document.getElementById('err').innerText='Error: '+m;};
+
+var assets=[
 {name:'EUR/USD',price:1.0850,open:1.0850,candles:[]},
 {name:'GBP/USD',price:1.2700,open:1.2700,candles:[]},
 {name:'USD/JPY',price:151.20,open:151.20,candles:[]},
 {name:'GOLD',price:2350,open:2350,candles:[]}
 ];
-let selected=null, balance=10000, trades=[], lot=0.01, timeframe='1M', tickCount=0;
-let tfTicks={'1M':2,'5M':5,'15M':10,'1H':20,'1D':40};
+var selected=null, balance=10000, trades=[], lot=0.01, timeframe='1M', tickCount=0;
+var tfTicks={'1M':2,'5M':5,'15M':10,'1H':20,'1D':40};
 
-// Make initial candles
-assets.forEach(a=>{
- let p=a.price;
- for(let i=0;i<24;i++){
-  let o=p; let c=o+(Math.random()-0.5)*(a.name==='GOLD'?3
+for(var ai=0;ai<assets.length;ai++){
+ var a=assets[ai]; var p=a.price;
+ for(var i=0;i<24;i++){
+  var o=p;
+  var step=a.name==='GOLD'?3:0.001;
+  var c=o+(Math.random()-0.5)*step;
+  var h=Math.max(o,c)+Math.random()*step*0.5;
+  var l=Math.min(o,c)-Math.random()*step*0.5;
+  a.candles.push({o:o,h:h,l:l,c:c}); p=c;
+ }
+ a.price=p;
+}
+
+function drawCandles(id, candles){
+ var c=document.getElementById(id); if(!c) return;
+ var ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+ if(!candles.length) return;
+ var min=999999, max=-999999;
+ for(var i=0;i<candles.length;i++){ if(candles[i].h>max) max=candles[i].h; if(candles[i].l<min) min=candles[i].l; }
+ var range=(max-min)||1;
+ var w=c.width/candles.length;
+ for(var j=0;j<candles.length;j++){
+  var k=candles[j]; var x=j*w+w/2;
+  var up=k.c>=k.o; var col=up?'#00d084':'#ff3b3b';
+  var yH=c.height-((k.h-min)/range)*c.height;
+  var yL=c.height-((k.l-min)/range)*c.height;
+  var yO=c.height-((k.o-min)/range)*c.height;
+  var yC=c.height-((k.c-min)/range)*c.height;
+  ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yL); ctx.stroke();
+  ctx.fillStyle=col;
+  var top=Math.min(yO,yC); var hh=Math.max(2,Math.abs(yC-yO));
+  ctx.fillRect(x-w*0.35, top, w*0.7, hh);
+ }
+}
+
+function tfBar(){
+ var html='<div class="tf">';
+ var tfs=['1M','5M','15M','1H','1D'];
+ for(var i=0;i<tfs.length;i++){
+  var cls=tfs[i]===timeframe?'active':'';
+  html+='<button class="'+cls+'" onclick="setTF(\''+tfs[i]+'\')">'+tfs[i]+'</button>';
+ }
+ return html+'</div>';
+}
+
+function renderList(){
+ var pnl=0;
+ for(var i=0;i<trades.length;i++){ var t=trades[i]; var aa=null; for(var k=0;k<assets.length;k++) if(assets[k].name===t.name) aa=assets[k]; var d=t.type==='BUY'?aa.price-t.entry:t.entry-aa.price; pnl+=d*(t.name==='GOLD'?1:100)*t.lot*100; }
+ var html='<h1>FBS FX</h1><p>Live Forex - Candlesticks</p>';
+ html+='<div class="card"><b>Demo Balance: $'+balance.toFixed(2)+'</b><br><span class="small">Floating P/L: $'+pnl.toFixed(2)+'</span></div>';
+ for(var j=0;j<assets.length;j++){
+  var a=assets[j]; var
