@@ -14,7 +14,7 @@ h1{color:#00d084;margin:0}
 .big{font-size:32px;font-weight:bold}
 .up{color:#00d084}.down{color:#ff3b3b}
 .back{background:#222;border:0;color:#fff;padding:10px 16px;border-radius:8px}
-canvas{width:100%;background:#0a0f1e;border-radius:8px}
+canvas{width:100%;background:#0a0f1e;border-radius:8px;display:block}
 .tf{display:flex;gap:6px;margin:10px 0}
 .tf button{flex:1;padding:10px 0;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold}
 .tf button.active{background:#00d084;color:#000}
@@ -30,26 +30,43 @@ label{font-size:13px;color:#aaa}
 .tab{display:flex;gap:6px;margin-bottom:10px}
 .tab button{flex:1;padding:10px;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold}
 .tab button.active{background:#fff;color:#000}
+.mini{display:flex;align-items:flex-end;gap:2px;height:60px;background:#0a0f1e;border-radius:8px;padding:6px;box-sizing:border-box;margin:8px 0}
+.mini div{flex:1;border-radius:2px;min-height:6px}
 </style>
 </head>
 <body>
-<div id="err" style="color:#ff3b3b;background:#300;padding:10px;display:none"></div>
+<div id="err" style="color:#fff;background:#c00;padding:10px;display:none"></div>
 <div id="app">
 <h1>FBS FX</h1>
 <p>Live Forex - Candlesticks</p>
 <div class="card"><b>Demo Balance: $<span id="bal">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span><br><span class="small" id="todayPnl">Today Profit: $0.00</span></div>
-
-<!-- PAIRS ARE IN HTML SO THEY ALWAYS SHOW -->
 <div id="list">
-<div class="card" onclick="openDetail('EUR/USD')"><b>EUR/USD</b> - <span id="p0">$1.0850</span><br><canvas id="mini0" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
-<div class="card" onclick="openDetail('GBP/USD')"><b>GBP/USD</b> - <span id="p1">$1.2700</span><br><canvas id="mini1" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
-<div class="card" onclick="openDetail('USD/JPY')"><b>USD/JPY</b> - <span id="p2">$151.20</span><br><canvas id="mini2" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
-<div class="card" onclick="openDetail('GOLD')"><b>GOLD</b> - <span id="p3">$2350.00</span><br><canvas id="mini3" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
-<div class="card" onclick="openDetail('BTC/USD')"><b>BTC/USD</b> - <span id="p4">$65000</span><br><canvas id="mini4" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
-<div class="card" onclick="openDetail('USD/KES')"><b>USD/KES</b> - <span id="p5">$130.50</span><br><canvas id="mini5" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
-<div class="card" onclick="openDetail('GBP/JPY')"><b>GBP/JPY</b> - <span id="p6">$192.50</span><br><canvas id="mini6" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
-<div class="card" onclick="openDetail('AUD/USD')"><b>AUD/USD</b> - <span id="p7">$0.6500</span><br><canvas id="mini7" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
-<div class="card" onclick="openDetail('USD/CHF')"><b>USD/CHF</b> - <span id="p8">$0.8800</span><br><canvas id="mini8" width="340" height="60"></canvas><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('EUR/USD')"><b>EUR/USD</b> - <span id="p0">$1.0850</span><div class="mini" id="mini0"></div><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('GBP/USD')"><b>GBP/USD</b> - <span id="p1">$1.2700</span><div class="mini" id="mini1"></div><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('USD/JPY')"><b>USD/JPY</b> - <span id="p2">$151.20</span><div class="mini" id="mini2"></div><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('GOLD')"><b>GOLD</b> - <span id="p3">$2350.00</span><div class="mini" id="mini3"></div><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('BTC/USD')"><b>BTC/USD</b> - <span id="p4">$65000</span><div class="mini" id="mini4"></div><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('USD/KES')"><b>USD/KES</b> - <span id="p5">$130.50</span><div class="mini" id="mini5"></div><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('GBP/JPY')"><b>GBP/JPY</b> - <span id="p6">$192.50</span><div class="mini" id="mini6"></div><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('AUD/USD')"><b>AUD/USD</b> - <span id="p7">$0.6500</span><div class="mini" id="mini7"></div><div class="small">Tap to open &gt;</div></div>
+<div class="card" onclick="openDetail('USD/CHF')"><b>USD/CHF</b> - <span id="p8">$0.8800</span><div class="mini" id="mini8"></div><div class="small">Tap to open &gt;</div></div>
 </div>
-
-<div class="card"><div class="tab"><button id="tabOpen" class="active" onclick="showTab('open')">Open Trades</button
+<div class="card"><div class="tab"><button id="tabOpen" class="active" onclick="showTab('open')">Open Trades</button><button id="tabHist" onclick="showTab('hist')">History</button></div><div id="trades">No open trades yet</div></div>
+</div>
+<script>
+function showErr(m){ var e=document.getElementById('err'); e.style.display='block'; e.innerText='Error: '+m; }
+try{
+var assets=[
+{name:'EUR/USD',price:1.0850,open:1.0850,candles:[]},
+{name:'GBP/USD',price:1.27,open:1.27,candles:[]},
+{name:'USD/JPY',price:151.2,open:151.2,candles:[]},
+{name:'GOLD',price:2350,open:2350,candles:[]},
+{name:'BTC/USD',price:65000,open:65000,candles:[]},
+{name:'USD/KES',price:130.5,open:130.5,candles:[]},
+{name:'GBP/JPY',price:192.5,open:192.5,candles:[]},
+{name:'AUD/USD',price:0.65,open:0.65,candles:[]},
+{name:'USD/CHF',price:0.88,open:0.88,candles:[]}
+];
+var selected=null, balance=10000, trades=[], history=[], lot=0.01, timeframe='1M', tickCount=0, currentTab='open';
+var tfTicks={'1M':2,'5M':5,'15M':10,'1H':20,'1D':40};
+for(var ai=0;ai
