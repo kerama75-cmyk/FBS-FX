@@ -7,82 +7,89 @@
 body{font-family:Arial;background:#0a0f1e;color:#fff;margin:0;padding:16px;padding-bottom:40px}
 h1{color:#00d084;margin:0}
 .card{background:#141b32;padding:16px;border-radius:12px;margin:10px 0}
-.card.active{border:2px solid #00d084}
 .row{display:flex;gap:10px}
 .buy{flex:1;background:#00d084;color:#000;border:0;padding:18px;border-radius:10px;font-weight:bold;font-size:19px}
 .sell{flex:1;background:#ff3b3b;color:#fff;border:0;padding:18px;border-radius:10px;font-weight:bold;font-size:19px}
 .small{color:#aaa;font-size:13px}
-.big{font-size:28px;font-weight:bold}
+.big{font-size:32px;font-weight:bold}
 .up{color:#00d084}.down{color:#ff3b3b}
+.back{background:#222;border:0;color:#fff;padding:10px 16px;border-radius:8px}
+canvas.mini{width:100%;height:60px;background:#0a0f1e;border-radius:8px;margin-top:8px}
+canvas.bigchart{width:100%;height:180px;background:#0a0f1e;border-radius:8px}
+input{width:100%;padding:12px;border-radius:8px;border:0;margin:10px 0;font-size:16px;background:#1e2745;color:#fff}
+.top{display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
 <body>
-<h1>FBS FX</h1>
-<p>Live Forex Prices</p>
-<div class="card"><b>Demo Balance: $<span id="balance">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span><br><span class="small" id="status">Live - Demo</span></div>
-<div id="coinList"></div>
-<div class="card"><div class="small">Selected Pair</div><div class="big" id="price">Loading...</div><div class="small" id="change"></div></div>
-<div class="row">
-<button class="buy" onclick="openTrade('BUY')">BUY</button>
-<button class="sell" onclick="openTrade('SELL')">SELL</button>
-</div>
-<div class="card"><h3>Open Trades</h3><div id="trades">No open trades yet</div></div>
+<div id="app"></div>
 <script>
 let assets=[
-{name:'EUR/USD',price:1.0850,open:1.0850},
-{name:'GBP/USD',price:1.2700,open:1.2700},
-{name:'USD/JPY',price:151.20,open:151.20},
-{name:'GOLD',price:2350.00,open:2350.00}
+{name:'EUR/USD',price:1.0850,open:1.0850,history:[]},
+{name:'GBP/USD',price:1.2700,open:1.2700,history:[]},
+{name:'USD/JPY',price:151.20,open:151.20,history:[]},
+{name:'GOLD',price:2350,open:2350,history:[]}
 ];
-let selected=assets[0], balance=10000, trades=[];
-function render(){
- document.getElementById('coinList').innerHTML=assets.map(a=>{
-  let ch=((a.price-a.open)/a.open*100).toFixed(2);
-  let cls=ch>=0?'up':'down';
-  return '<div class="card '+(a===selected?'active':'')+'" onclick="selectCoin(\''+a.name+'\')"><b>'+a.name+'</b> - $'+a.price.toFixed(2)+' <span class="'+cls+'">'+ch+'%</span></div>';
- }).join('');
- let s=selected;
- let ch2=((s.price-s.open)/s.open*100).toFixed(2);
- document.getElementById('price').innerText=s.name+' : $'+s.price.toFixed(2);
- document.getElementById('change').innerHTML='<span class="'+(ch2>=0?'up':'down')+'">'+ch2+'% today</span>';
- document.getElementById('balance').innerText=balance.toFixed(2);
+let selected=null, balance=10000, trades=[], lot=0.01;
+assets.forEach(a=>{let p=a.price; for(let i=0;i<30;i++){p+=(Math.random()-0.5)*(a.name==='GOLD'?1:0.0005); a.history.push(p);} a.price=p;});
+
+function drawMini(id, history, color){
+ let c=document.getElementById(id); if(!c) return;
+ let ctx=c.getContext('2d'); let min=Math.min(...history), max=Math.max(...history);
+ ctx.clearRect(0,0,c.width,c.height);
+ ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2;
+ history.forEach((p,i)=>{let x=i/(history.length-1)*c.width; let y=c.height-((p-min)/((max-min)||1))*c.height; if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);});
+ ctx.stroke();
+ // fill under line
+ ctx.lineTo(c.width,c.height); ctx.lineTo(0,c.height); ctx.closePath(); ctx.fillStyle=color+'22'; ctx.fill();
+}
+function drawBig(){
+ let c=document.getElementById('bigchart'); if(!c) return;
+ let a=assets.find(x=>x.name===selected.name); let ch=(a.price-a.open)>=0;
+ drawMini('bigchart', a.history, ch?'#00d084':'#ff3b3b');
+}
+
+function renderList(){
  let pnl=0;
- trades.forEach(t=>{
-  let a=assets.find(x=>x.name===t.name);
-  let d=t.type==='BUY'?a.price-t.entry:t.entry-a.price;
-  pnl+=d*(t.name==='GOLD'?1:100);
- });
- document.getElementById('pnl').innerText='Floating P/L: $'+pnl.toFixed(2);
- document.getElementById('trades').innerHTML=trades.length?trades.map((t,i)=>'<div style="border-top:1px solid #333;padding:8px 0"><b>'+t.type+' '+t.name+'</b> @ $'+t.entry.toFixed(2)+' <button onclick="closeTrade('+i+')" style="float:right;padding:6px 12px">Close</button></div>').join(''):'No open trades yet';
+ trades.forEach(t=>{let a=assets.find(x=>x.name===t.name); let d=t.type==='BUY'?a.price-t.entry:t.entry-a.price; pnl+=d*(t.name==='GOLD'?1:100)*t.lot*100;});
+ document.getElementById('app').innerHTML=`
+ <h1>FBS FX</h1><p>Live Forex Prices</p>
+ <div class="card"><b>Demo Balance: $${balance.toFixed(2)}</b><br><span class="small">Floating P/L: $${pnl.toFixed(2)}</span><br><span class="small">Tap a pair to trade</span></div>
+ ${assets.map((a,i)=>{
+  let ch=((a.price-a.open)/a.open*100).toFixed(2);
+  let col=ch>=0?'#00d084':'#ff3b3b';
+  return `<div class="card" onclick="openDetail('${a.name}')">
+   <div class="top"><b>${a.name}</b><span style="color:${col};font-weight:bold">$${a.price.toFixed(2)} &nbsp; ${ch}%</span></div>
+   <canvas class="mini" id="mini${i}" width="340" height="60"></canvas>
+   <div class="small">Tap to open &gt;</div></div>`;
+ }).join('')}
+ <div class="card"><h3>Open Trades</h3>${trades.length?trades.map((t,i)=>`<div style="border-top:1px solid #333;padding:8px 0"><b>${t.type} ${t.name} ${t.lot} lot</b> @ $${t.entry.toFixed(2)} <button onclick="closeTrade(${i})" style="float:right;padding:6px 12px">Close</button></div>`).join(''):'No open trades yet'}</div>`;
+ assets.forEach((a,i)=>{let ch=(a.price-a.open)>=0; drawMini('mini'+i, a.history, ch?'#00d084':'#ff3b3b');});
 }
-function selectCoin(n){selected=assets.find(a=>a.name===n);render();}
-function openTrade(type){trades.push({type:type,name:selected.name,entry:selected.price});render();}
-function closeTrade(i){
- let t=trades[i]; let a=assets.find(x=>x.name===t.name);
- let profit=(t.type==='BUY'?a.price-t.entry:t.entry-a.price)*(t.name==='GOLD'?1:100);
- balance+=profit; trades.splice(i,1); render();
+
+function openDetail(name){
+ selected={name:name};
+ let a=assets.find(x=>x.name===name);
+ let ch=((a.price-a.open)/a.open*100).toFixed(2);
+ document.getElementById('app').innerHTML=`
+ <button class="back" onclick="back()">← Back</button>
+ <h1 style="margin-top:12px">${name}</h1>
+ <div class="card"><div class="big">$${a.price.toFixed(2)}</div><div class="${ch>=0?'up':'down'}">${ch}% today</div><canvas class="bigchart" id="bigchart" width="340" height="180"></canvas><div class="small">Live chart - updates every second</div></div>
+ <div class="card"><b>Lot Size</b><input type="number" value="${lot}" step="0.01" min="0.01" onchange="lot=parseFloat(this.value)"></div>
+ <div class="row"><button class="buy" onclick="openTrade('BUY')">BUY<br><span style="font-size:12px">at $${a.price.toFixed(2)}</span></button><button class="sell" onclick="openTrade('SELL')">SELL<br><span style="font-size:12px">at $${a.price.toFixed(2)}</span></button></div>
+ <div class="card"><h3>Your ${name} Trades</h3>${trades.filter(t=>t.name===name).length?trades.map((t,i)=>t.name===name?`<div style="border-top:1px solid #333;padding:8px 0"><b>${t.type} ${t.lot} lot</b> @ $${t.entry.toFixed(2)} <button onclick="closeTrade(${i})" style="float:right">Close</button></div>`:'').join(''):'No trades on '+name+' yet'}</div>`;
+ drawBig();
 }
+function back(){selected=null;renderList();}
+function openTrade(type){let a=assets.find(x=>x.name===selected.name); trades.push({type:type,name:a.name,entry:a.price,lot:lot}); openDetail(a.name);}
+function closeTrade(i){let t=trades[i]; let a=assets.find(x=>x.name===t.name); let profit=(t.type==='BUY'?a.price-t.entry:t.entry-a.price)*(t.name==='GOLD'?1:100)*t.lot*100; balance+=profit; trades.splice(i,1); if(selected) openDetail(selected.name); else renderList();}
 async function loadRates(){
- try{
-  let r=await fetch('https://open.er-api.com/v6/latest/USD');
-  let j=await r.json();
-  if(j.rates){
-   assets[0].price=1/j.rates.EUR; assets[0].open=1/j.rates.EUR;
-   assets[1].price=1/j.rates.GBP; assets[1].open=1/j.rates.GBP;
-   assets[2].price=j.rates.JPY; assets[2].open=j.rates.JPY;
-   document.getElementById('status').innerText='Live - Updated '+new Date().toLocaleTimeString();
-   render();
-  }
- }catch(e){}
+ try{let r=await fetch('https://open.er-api.com/v6/latest/USD'); let j=await r.json(); if(j.rates){assets[0].price=1/j.rates.EUR; assets[0].open=1/j.rates.EUR; assets[1].price=1/j.rates.GBP; assets[1].open=1/j.rates.GBP; assets[2].price=j.rates.JPY; assets[2].open=j.rates.JPY; if(selected) openDetail(selected.name); else renderList();}}catch(e){}
 }
 setInterval(()=>{
- assets.forEach(a=>{
-  let step=a.name==='GOLD'?0.6:a.name==='USD/JPY'?0.02:0.0003;
-  a.price+=(Math.random()-0.5)*step;
- });
- render();
+ assets.forEach(a=>{let step=a.name==='GOLD'?0.6:a.name==='USD/JPY'?0.02:0.0003; a.price+=(Math.random()-0.5)*step; a.history.push(a.price); if(a.history.length>30)a.history.shift();});
+ if(selected) openDetail(selected.name); else renderList();
 },1000);
-render(); loadRates(); setInterval(loadRates,30000);
+renderList(); loadRates(); setInterval(loadRates,30000);
 </script>
 </body>
 </html>
