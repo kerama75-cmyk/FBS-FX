@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FBS FX - Live Forex</title>
+<style>
+body{font-family:Arial;background:#0a0f1e;color:white;margin:0;padding:16px}
+h1{color:#00d084;margin-bottom:0}
+.card{background:#141b32;padding:16px;border-radius:12px;margin:10px 0;cursor:pointer}
+button{background:#00d084;color:#000;border:0;padding:14px;border-radius:8px;font-weight:bold;width:100%;font-size:16px}
+</style>
+</head>
+<body>
+<h1>FBS FX</h1>
+<p>Live Forex Prices</p>
+<div id="coinList"></div>
+<div class="card"><h2 id="price">Loading...</h2><canvas id="chart"></canvas></div>
+<button onclick="window.open('https://wa.me/254704809235')">Join on WhatsApp</button>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let assets=[
+{symbol:'frxEURUSD',name:'EUR/USD',price:0,history:[]},
+{symbol:'frxGBPUSD',name:'GBP/USD',price:0,history:[]},
+{symbol:'frxUSDJPY',name:'USD/JPY',price:0,history:[]},
+{symbol:'frxXAUUSD',name:'GOLD',price:0,history:[]}
+];
+let selected=assets[0], chart;
+function render(){
+ document.getElementById('coinList').innerHTML=assets.map(a=>'<div class="card" onclick="selectCoin(\''+a.symbol+'\')"><b>'+a.name+'</b> - '+(a.price?'$'+a.price.toFixed(2):'Loading...')+'</div>').join('');
+ document.getElementById('price').innerText=selected.name+' : '+(selected.price?'$'+selected.price.toFixed(2):'Loading...');
+ if(chart) chart.destroy();
+ chart=new Chart(document.getElementById('chart'),{type:'line',data:{labels:(selected.history||[]).map((_,i)=>i+1),datasets:[{label:selected.name,data:(selected.history||[]),borderColor:'#00d084',tension:0.4}]},options:{plugins:{legend:{display:false}}}});
+}
+function selectCoin(s){selected=assets.find(a=>a.symbol===s);render();}
+function connect(){
+ let ws=new WebSocket('wss://ws.derivws.com/websockets/v3?app_id=1089');
+ ws.onopen=()=>{assets.forEach(a=>ws.send(JSON.stringify({ticks:a.symbol,subscribe:1})))};
+ ws.onmessage=(e)=>{let d=JSON.parse(e.data);if(d.tick){let a=assets.find(x=>x.symbol===d.tick.symbol);if(a){a.price=parseFloat(d.tick.quote);a.history.push(a.price);if(a.history.length>30)a.history.shift();render();}}};
+}
+render();connect();
+</script>
+</body>
+</html>
