@@ -22,11 +22,16 @@ input{width:100%;padding:12px;border-radius:8px;border:0;margin:10px 0;font-size
 </style>
 </head>
 <body>
-<div id="app"><h1>FBS FX</h1><p>Loading...</p></div>
-<div id="err" style="color:red"></div>
+<div id="app">
+<h1>FBS FX</h1>
+<p>Live Forex - Candlesticks</p>
+<div class="card"><b>Demo Balance: $<span id="bal">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span></div>
+<div id="list"></div>
+<div class="card"><h3>Open Trades</h3><div id="trades">No open trades yet</div></div>
+</div>
+<div id="err" style="color:#ff3b3b"></div>
 <script>
-window.onerror=function(m){document.getElementById('err').innerText='Error: '+m;};
-
+try{
 var assets=[
 {name:'EUR/USD',price:1.0850,open:1.0850,candles:[]},
 {name:'GBP/USD',price:1.2700,open:1.2700,candles:[]},
@@ -35,56 +40,62 @@ var assets=[
 ];
 var selected=null, balance=10000, trades=[], lot=0.01, timeframe='1M', tickCount=0;
 var tfTicks={'1M':2,'5M':5,'15M':10,'1H':20,'1D':40};
+for(var ai=0;ai<assets.length;ai++){ var a=assets[ai]; var p=a.price; for(var i=0;i<24;i++){ var o=p; var st=a.name==='GOLD'?3:0.001; var c=o+(Math.random()-0.5)*st; var h=Math.max(o,c)+Math.random()*st*0.5; var l=Math.min(o,c)-Math.random()*st*0.5; a.candles.push({o:o,h:h,l:l,c:c}); p=c; } a.price=p; }
 
-for(var ai=0;ai<assets.length;ai++){
- var a=assets[ai]; var p=a.price;
- for(var i=0;i<24;i++){
-  var o=p;
-  var step=a.name==='GOLD'?3:0.001;
-  var c=o+(Math.random()-0.5)*step;
-  var h=Math.max(o,c)+Math.random()*step*0.5;
-  var l=Math.min(o,c)-Math.random()*step*0.5;
-  a.candles.push({o:o,h:h,l:l,c:c}); p=c;
- }
- a.price=p;
-}
-
-function drawCandles(id, candles){
- var c=document.getElementById(id); if(!c) return;
- var ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+function draw(id, candles){
+ var cv=document.getElementById(id); if(!cv) return;
+ var ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
  if(!candles.length) return;
- var min=999999, max=-999999;
- for(var i=0;i<candles.length;i++){ if(candles[i].h>max) max=candles[i].h; if(candles[i].l<min) min=candles[i].l; }
- var range=(max-min)||1;
- var w=c.width/candles.length;
- for(var j=0;j<candles.length;j++){
-  var k=candles[j]; var x=j*w+w/2;
-  var up=k.c>=k.o; var col=up?'#00d084':'#ff3b3b';
-  var yH=c.height-((k.h-min)/range)*c.height;
-  var yL=c.height-((k.l-min)/range)*c.height;
-  var yO=c.height-((k.o-min)/range)*c.height;
-  var yC=c.height-((k.c-min)/range)*c.height;
+ var mn=1e9, mx=-1e9;
+ for(var i=0;i<candles.length;i++){ if(candles[i].h>mx) mx=candles[i].h; if(candles[i].l<mn) mn=candles[i].l; }
+ var rg=(mx-mn)||1; var w=cv.width/candles.length;
+ for(var j=0;j<candles.length;j++){ var k=candles[j]; var x=j*w+w/2; var col=k.c>=k.o?'#00d084':'#ff3b3b';
+  var yH=cv.height-((k.h-mn)/rg)*cv.height; var yL=cv.height-((k.l-mn)/rg)*cv.height;
+  var yO=cv.height-((k.o-mn)/rg)*cv.height; var yC=cv.height-((k.c-mn)/rg)*cv.height;
   ctx.strokeStyle=col; ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yL); ctx.stroke();
-  ctx.fillStyle=col;
-  var top=Math.min(yO,yC); var hh=Math.max(2,Math.abs(yC-yO));
-  ctx.fillRect(x-w*0.35, top, w*0.7, hh);
- }
-}
-
-function tfBar(){
- var html='<div class="tf">';
- var tfs=['1M','5M','15M','1H','1D'];
- for(var i=0;i<tfs.length;i++){
-  var cls=tfs[i]===timeframe?'active':'';
-  html+='<button class="'+cls+'" onclick="setTF(\''+tfs[i]+'\')">'+tfs[i]+'</button>';
- }
- return html+'</div>';
+  ctx.fillStyle=col; var top=Math.min(yO,yC); var hh=Math.max(2,Math.abs(yC-yO)); ctx.fillRect(x-w*0.35,top,w*0.7,hh); }
 }
 
 function renderList(){
- var pnl=0;
- for(var i=0;i<trades.length;i++){ var t=trades[i]; var aa=null; for(var k=0;k<assets.length;k++) if(assets[k].name===t.name) aa=assets[k]; var d=t.type==='BUY'?aa.price-t.entry:t.entry-aa.price; pnl+=d*(t.name==='GOLD'?1:100)*t.lot*100; }
- var html='<h1>FBS FX</h1><p>Live Forex - Candlesticks</p>';
- html+='<div class="card"><b>Demo Balance: $'+balance.toFixed(2)+'</b><br><span class="small">Floating P/L: $'+pnl.toFixed(2)+'</span></div>';
- for(var j=0;j<assets.length;j++){
-  var a=assets[j]; var
+ var html='';
+ for(var j=0;j<assets.length;j++){ var a=assets[j]; var ch=((a.price-a.open)/a.open*100).toFixed(2); var col=ch>=0?'#00d084':'#ff3b3b';
+  html+='<div class="card" onclick="openDetail(\''+a.name+'\')"><b>'+a.name+'</b> - <span style="color:'+col+'">$'+a.price.toFixed(2)+' '+ch+'%</span><br><canvas id="mini'+j+'" width="340" height="60"></canvas><div class="small">Tap to open candlestick chart &gt;</div></div>'; }
+ document.getElementById('list').innerHTML=html;
+ document.getElementById('bal').innerText=balance.toFixed(2);
+ for(var m=0;m<assets.length;m++) draw('mini'+m, assets[m].candles.slice(-20));
+ updateTrades();
+}
+function updateTrades(){
+ var pnl=0; for(var i=0;i<trades.length;i++){ var t=trades[i]; var aa=null; for(var k=0;k<assets.length;k++) if(assets[k].name===t.name) aa=assets[k]; var d=t.type==='BUY'?aa.price-t.entry:t.entry-aa.price; pnl+=d*(t.name==='GOLD'?1:100)*t.lot*100; }
+ document.getElementById('pnl').innerText='Floating P/L: $'+pnl.toFixed(2);
+ if(!selected){ var h=''; if(trades.length===0) h='No open trades yet'; else for(var ti=0;ti<trades.length;ti++) h+='<div><b>'+trades[ti].type+' '+trades[ti].name+' '+trades[ti].lot+' lot</b> @ $'+trades[ti].entry.toFixed(2)+' <button onclick="closeTrade('+ti+')">Close</button></div>'; document.getElementById('trades').innerHTML=h; }
+}
+function tfBar(){ var h='<div class="tf">'; var tfs=['1M','5M','15M','1H','1D']; for(var i=0;i<tfs.length;i++){ h+='<button class="'+(tfs[i]===timeframe?'active':'')+'" onclick="setTF(\''+tfs[i]+'\')">'+tfs[i]+'</button>'; } return h+'</div>'; }
+function openDetail(name){
+ selected=name; var a=null; for(var i=0;i<assets.length;i++) if(assets[i].name===name) a=assets[i];
+ var ch=((a.price-a.open)/a.open*100).toFixed(2); var cls=ch>=0?'up':'down';
+ var html='<button class="back" onclick="back()">← Back</button><h1 style="margin-top:12px">'+name+'</h1>';
+ html+='<div class="card"><div class="big">$'+a.price.toFixed(2)+'</div><div class="'+cls+'">'+ch+'% today</div>'+tfBar()+'<canvas id="bigchart" width="340" height="220"></canvas><div class="small">Candlesticks - Green Up, Red Down - '+timeframe+'</div></div>';
+ html+='<div class="card"><b>Lot Size</b><input type="number" value="'+lot+'" step="0.01" min="0.01" onchange="lot=parseFloat(this.value)"></div>';
+ html+='<div class="row"><button class="buy" onclick="openTrade(\'BUY\')">BUY<br><span style="font-size:12px">at $'+a.price.toFixed(2)+'</span></button><button class="sell" onclick="openTrade(\'SELL\')">SELL<br><span style="font-size:12px">at $'+a.price.toFixed(2)+'</span></button></div>';
+ html+='<div class="card"><h3>Your '+name+' Trades</h3><div id="trades">No trades</div></div>';
+ document.getElementById('app').innerHTML=html;
+ // rebuild trades list for detail
+ var th=''; var found=false; for(var ti=0;ti<trades.length;ti++) if(trades[ti].name===name){ found=true; th+='<div><b>'+trades[ti].type+' '+trades[ti].lot+' lot</b> @ $'+trades[ti].entry.toFixed(2)+' <button onclick="closeTrade('+ti+')">Close</button></div>'; }
+ document.getElementById('trades').innerHTML=found?th:'No trades on '+name+' yet';
+ draw('bigchart', a.candles);
+}
+function setTF(t){ timeframe=t; if(selected) openDetail(selected); else renderList(); }
+function back(){ selected=null; location.reload(); }
+function openTrade(type){ var a=null; for(var i=0;i<assets.length;i++) if(assets[i].name===selected) a=assets[i]; trades.push({type:type,name:a.name,entry:a.price,lot:lot}); openDetail(a.name); }
+function closeTrade(i){ var t=trades[i]; var a=null; for(var k=0;k<assets.length;k++) if(assets[k].name===t.name) a=assets[k]; var prof=(t.type==='BUY'?a.price-t.entry:t.entry-a.price)*(t.name==='GOLD'?1:100)*t.lot*100; balance+=prof; trades.splice(i,1); if(selected) openDetail(selected); else renderList(); }
+setInterval(function(){
+ tickCount++;
+ for(var i=0;i<assets.length;i++){ var a=assets[i]; var st=a.name==='GOLD'?0.6:a.name==='USD/JPY'?0.02:0.0003; a.price+=(Math.random()-0.5)*st; var last=a.candles[a.candles.length-1]; last.c=a.price; if(a.price>last.h) last.h=a.price; if(a.price<last.l) last.l=a.price; if(tickCount % tfTicks[timeframe]===0){ a.candles.push({o:a.price,h:a.price,l:a.price,c:a.price}); if(a.candles.length>40) a.candles.shift(); } }
+ if(selected) openDetail(selected); else renderList();
+},1000);
+renderList();
+}catch(e){ document.getElementById('err').innerText='Error: '+e.message; }
+</script>
+</body>
+</html>
