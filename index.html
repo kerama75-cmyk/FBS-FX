@@ -17,7 +17,7 @@ h1{color:#00d084;margin:0}
 .tf{display:flex;gap:6px;margin:10px 0}
 .tf button{flex:1;padding:10px 0;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold}
 .tf button.active{background:#00d084;color:#000}
-input{width:100%;padding:12px;border-radius:8px;border:0;margin:6px 0;font-size:16px;background:#1e2745;color:#fff;box-sizing:border-box}
+input,select{width:100%;padding:12px;border-radius:8px;border:0;margin:6px 0;font-size:16px;background:#1e2745;color:#fff;box-sizing:border-box}
 label{font-size:13px;color:#aaa}
 .trade{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #333;padding:10px 0;flex-wrap:wrap}
 .trade-info{flex:1;min-width:140px}
@@ -26,6 +26,7 @@ label{font-size:13px;color:#aaa}
 .hist{border-top:1px solid #333;padding:8px 0;font-size:14px}
 .badge{font-size:11px;padding:3px 7px;border-radius:5px;font-weight:bold}
 .badge-tp{background:#00d084;color:#000}.badge-sl{background:#ff3b3b;color:#fff}.badge-manual{background:#444;color:#fff}
+.badge-dep{background:#00d084;color:#000}.badge-with{background:#ff9800;color:#000}
 .tab{display:flex;gap:6px;margin-bottom:10px}
 .tab button{flex:1;padding:10px;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold}
 .tab button.active{background:#fff;color:#000}
@@ -35,14 +36,22 @@ label{font-size:13px;color:#aaa}
 .bigchart .candle{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
 .bigchart .wick{width:2px}
 .bigchart .body{width:100%;border-radius:2px;min-height:4px}
+.depbtn{flex:1;background:#00d084;color:#000;border:0;padding:14px;border-radius:10px;font-weight:bold;font-size:16px}
+.withbtn{flex:1;background:#ff9800;color:#000;border:0;padding:14px;border-radius:10px;font-weight:bold;font-size:16px}
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:999;padding:16px}
+.modal.show{display:flex}
+.modalbox{background:#141b32;padding:20px;border-radius:14px;width:100%;max-width:360px}
+.quick{display:flex;gap:6px;margin:8px 0}
+.quick button{flex:1;padding:10px;border:0;border-radius:8px;background:#1e2745;color:#fff;font-weight:bold}
 </style>
 </head>
 <body>
 <div id="err" style="color:#fff;background:#c00;padding:10px;display:none"></div>
+<div id="modal" class="modal"><div class="modalbox"><h2 id="modalTitle">Deposit</h2><label>Amount ($)</label><input type="number" id="moneyAmt" value="100" min="1"><div class="quick"><button onclick="setAmt(10)">$10</button><button onclick="setAmt(50)">$50</button><button onclick="setAmt(100)">$100</button><button onclick="setAmt(500)">$500</button></div><label>Method</label><select id="moneyMethod"><option>M-Pesa</option><option>Card</option><option>Bank Transfer</option><option>Crypto</option></select><div class="small" id="modalNote"></div><div class="row" style="margin-top:12px"><button class="depbtn" id="modalConfirm" onclick="confirmMoney()">Confirm</button><button style="flex:1;background:#444;color:#fff;border:0;padding:14px;border-radius:10px;font-weight:bold" onclick="closeModal()">Cancel</button></div></div></div>
 <div id="app">
 <h1>FBS FX</h1>
 <p>Live Forex - Candlesticks - <span id="jsStatus" style="color:#ff3b3b">JS LOADING...</span></p>
-<div class="card"><b>Demo Balance: $<span id="bal">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span><br><span class="small" id="todayPnl">Today Profit: $0.00</span></div>
+<div class="card"><b>Demo Balance: $<span id="bal">10000.00</span></b><br><span class="small" id="pnl">Floating P/L: $0.00</span><br><span class="small" id="todayPnl">Today Profit: $0.00</span><div class="row" style="margin-top:12px"><button class="depbtn" onclick="openMoney('deposit')">⬆ Deposit</button><button class="withbtn" onclick="openMoney('withdraw')">⬇ Withdraw</button></div></div>
 <div id="list">
 <div class="card" onclick="openDetail('EUR/USD')"><b>EUR/USD</b> - <span id="p0">$1.0850</span><div class="mini" id="mini0"></div><div class="small">Tap to open &gt;</div></div>
 <div class="card" onclick="openDetail('GBP/USD')"><b>GBP/USD</b> - <span id="p1">$1.2700</span><div class="mini" id="mini1"></div><div class="small">Tap to open &gt;</div></div>
@@ -54,7 +63,7 @@ label{font-size:13px;color:#aaa}
 <div class="card" onclick="openDetail('AUD/USD')"><b>AUD/USD</b> - <span id="p7">$0.6500</span><div class="mini" id="mini7"></div><div class="small">Tap to open &gt;</div></div>
 <div class="card" onclick="openDetail('USD/CHF')"><b>USD/CHF</b> - <span id="p8">$0.8800</span><div class="mini" id="mini8"></div><div class="small">Tap to open &gt;</div></div>
 </div>
-<div class="card"><div class="tab"><button id="tabOpen" class="active" onclick="showTab('open')">Open Trades</button><button id="tabHist" onclick="showTab('hist')">History</button></div><div id="trades">No open trades yet</div></div>
+<div class="card"><div class="tab"><button id="tabOpen" class="active" onclick="showTab('open')">Open Trades</button><button id="tabHist" onclick="showTab('hist')">History</button><button id="tabTrans" onclick="showTab('trans')">Money</button></div><div id="trades">No open trades yet</div></div>
 </div>
 <script>
 document.getElementById('jsStatus').innerText='JS WORKING ✓';
@@ -72,7 +81,7 @@ var assets=[
 {name:'AUD/USD',price:0.65,open:0.65,candles:[]},
 {name:'USD/CHF',price:0.88,open:0.88,candles:[]}
 ];
-var selected=null, balance=10000, trades=[], closedTrades=[], lot=0.01, timeframe='1M', tickCount=0, currentTab='open';
+var selected=null, balance=10000, trades=[], closedTrades=[], moneyTxns=[], lot=0.01, timeframe='1M', tickCount=0, currentTab='open', moneyType='deposit';
 var tfTicks={'1M':2,'5M':5,'15M':10,'1H':20,'1D':40};
 for(var ai=0;ai<assets.length;ai++){ var a=assets[ai]; var p=a.price; for(var i=0;i<24;i++){ var o=p; var st=Math.abs(p)*0.002; var c=o+(Math.random()-0.5)*st; var h=Math.max(o,c)+Math.random()*st*0.5; var l=Math.min(o,c)-Math.random()*st*0.5; a.candles.push({o:o,h:h,l:l,c:c}); p=c; } a.price=p; }
 function getAsset(n){ for(var i=0;i<assets.length;i++) if(assets[i].name===n) return assets[i]; return null; }
@@ -112,17 +121,24 @@ function histRow(h){
  var badge=h.reason==='TP'?'<span class="badge badge-tp">TP HIT</span>':h.reason==='SL'?'<span class="badge badge-sl">SL HIT</span>':'<span class="badge badge-manual">MANUAL</span>';
  return '<div class="hist"><b>'+h.type+' '+h.name+' '+h.lot+' lot</b> '+badge+'<br><span class="small">Entry $'+fmt(h.name,h.entry)+' → Exit $'+fmt(h.name,h.exit)+' &nbsp; <b style="color:'+col+'">'+(h.profit>=0?'+':'')+'$'+h.profit.toFixed(2)+'</b></span></div>';
 }
+function txnRow(tx){
+ var isDep=tx.type==='deposit'; var col=isDep?'#00d084':'#ff9800'; var badge=isDep?'<span class="badge badge-dep">DEPOSIT</span>':'<span class="badge badge-with">WITHDRAW</span>';
+ return '<div class="hist"><b>'+(isDep?'⬆ Deposit':'⬇ Withdraw')+' $'+tx.amount.toFixed(2)+'</b> '+badge+'<br><span class="small">'+tx.method+' • Balance after: $'+tx.after.toFixed(2)+'</span></div>';
+}
 function renderTradesArea(){
  var te=document.getElementById('trades'); if(!te) return;
  if(currentTab==='open'){
   if(trades.length===0) te.innerHTML='No open trades yet';
   else { var h=''; for(var i=0;i<trades.length;i++) h+=tradeRow(trades[i],i); te.innerHTML=h; }
- } else {
+ } else if(currentTab==='hist'){
   if(closedTrades.length===0) te.innerHTML='No closed trades yet';
   else { var h2='<div class="small">Total Today: <b style="color:'+(todayProfit()>=0?'#00d084':'#ff3b3b')+'">'+(todayProfit()>=0?'+':'')+'$'+todayProfit().toFixed(2)+'</b></div>'; for(var j=closedTrades.length-1;j>=0;j--) h2+=histRow(closedTrades[j]); te.innerHTML=h2; }
+ } else {
+  if(moneyTxns.length===0) te.innerHTML='No deposits / withdrawals yet - tap Deposit above to add money';
+  else { var h3=''; for(var k=moneyTxns.length-1;k>=0;k--) h3+=txnRow(moneyTxns[k]); te.innerHTML=h3; }
  }
 }
-function showTab(t){ currentTab=t; var a=document.getElementById('tabOpen'); var b=document.getElementById('tabHist'); if(a&&b){ a.className=t==='open'?'active':''; b.className=t==='hist'?'active':''; } if(selected) openDetail(selected); else renderTradesArea(); }
+function showTab(t){ currentTab=t; var a=document.getElementById('tabOpen'); var b=document.getElementById('tabHist'); var c=document.getElementById('tabTrans'); if(a) a.className=t==='open'?'active':''; if(b) b.className=t==='hist'?'active':''; if(c) c.className=t==='trans'?'active':''; if(selected) openDetail(selected); else renderTradesArea(); }
 function renderList(){
  for(var j=0;j<assets.length;j++){
   var a=assets[j]; var el=document.getElementById('p'+j); if(el) el.innerText='$'+fmt(a.name,a.price);
@@ -133,6 +149,22 @@ function renderList(){
  var tp=document.getElementById('todayPnl'); if(tp) tp.innerText='Today Profit: $'+todayProfit().toFixed(2)+' | Closed: '+closedTrades.length+' trades';
  renderTradesArea();
 }
+function openMoney(type){
+ moneyType=type; var m=document.getElementById('modal'); m.className='modal show';
+ document.getElementById('modalTitle').innerText=type==='deposit'?'⬆ Deposit':'⬇ Withdraw';
+ document.getElementById('modalNote').innerText=type==='deposit'?'Money will be added to your balance instantly (demo).':'You have $'+balance.toFixed(2)+' available. Withdrawal is demo - no real money.';
+ var btn=document.getElementById('modalConfirm'); btn.innerText=type==='deposit'?'Deposit':'Withdraw'; btn.style.background=type==='deposit'?'#00d084':'#ff9800';
+}
+function closeModal(){ document.getElementById('modal').className='modal'; }
+function setAmt(v){ document.getElementById('moneyAmt').value=v; }
+function confirmMoney(){
+ var amt=parseFloat(document.getElementById('moneyAmt').value); var method=document.getElementById('moneyMethod').value;
+ if(!amt||amt<=0){ alert('Enter amount more than 0'); return; }
+ if(moneyType==='withdraw' && amt>balance){ alert('Not enough balance! You have $'+balance.toFixed(2)); return; }
+ if(moneyType==='deposit'){ balance+=amt; moneyTxns.push({type:'deposit',amount:amt,method:method,after:balance}); alert('✅ Deposited $'+amt.toFixed(2)+' via '+method+'\nNew Balance: $'+balance.toFixed(2)); }
+ else { balance-=amt; moneyTxns.push({type:'withdraw',amount:amt,method:method,after:balance}); alert('✅ Withdrawal $'+amt.toFixed(2)+' via '+method+' requested\nNew Balance: $'+balance.toFixed(2)); }
+ closeModal(); if(selected) openDetail(selected); else renderList();
+}
 function tfBar(){ var h='<div class="tf">'; var tfs=['1M','5M','15M','1H','1D']; for(var i=0;i<tfs.length;i++){ h+='<button class="'+(tfs[i]===timeframe?'active':'')+'" onclick="setTF(\''+tfs[i]+'\')">'+tfs[i]+'</button>'; } return h+'</div>'; }
 function openDetail(name){
  selected=name; var a=getAsset(name);
@@ -140,16 +172,17 @@ function openDetail(name){
  var pp=pairPnl(name); var pcol=pp>=0?'#00d084':'#ff3b3b';
  var html='<button class="back" onclick="back()">← Back</button><h1 style="margin-top:12px">'+name+'</h1>';
  html+='<div class="card"><div style="display:flex;justify-content:space-between"><div><div class="big">$'+fmt(name,a.price)+'</div><div class="'+cls+'">'+ch+'% today</div></div><div style="text-align:right"><div class="small">Balance</div><b>$'+balance.toFixed(2)+'</b><div class="small">P/L '+name+'</div><b style="color:'+pcol+'">'+(pp>=0?'+':'')+'$'+pp.toFixed(2)+'</b></div></div>'+tfBar()+'<div class="bigchart">'+drawBig(a.candles)+'</div><div class="small">Candlesticks - Green Up, Red Down - '+timeframe+'</div>';
- html+='<div class="pnl-box"><span>Total Floating P/L</span><b style="color:'+(totalPnl()>=0?'#00d084':'#ff3b3b')+'">'+(totalPnl()>=0?'+':'')+'$'+totalPnl().toFixed(2)+'</b></div></div>';
+ html+='<div class="pnl-box"><span>Total Floating P/L</span><b style="color:'+(totalPnl()>=0?'#00d084':'#ff3b3b')+'">'+(totalPnl()>=0?'+':'')+'$'+totalPnl().toFixed(2)+'</b></div><div class="row" style="margin-top:12px"><button class="depbtn" onclick="openMoney(\'deposit\')">⬆ Deposit</button><button class="withbtn" onclick="openMoney(\'withdraw\')">⬇ Withdraw</button></div></div>';
  html+='<div class="card"><b>Lot Size</b><input type="number" id="lotIn" value="'+lot+'" step="0.01" min="0.01" onchange="lot=parseFloat(this.value)">';
  html+='<div class="row"><div style="flex:1"><label>Take Profit (optional)</label><input type="number" id="tpIn" placeholder="e.g. '+fmt(name,a.price*1.01)+'"></div><div style="flex:1"><label>Stop Loss (optional)</label><input type="number" id="slIn" placeholder="e.g. '+fmt(name,a.price*0.99)+'"></div></div>';
  html+='<div class="small">BUY: TP ABOVE price, SL BELOW price<br>SELL: TP BELOW price, SL ABOVE price</div></div>';
  html+='<div class="row"><button class="buy" onclick="openTrade(\'BUY\')">BUY<br><span style="font-size:12px">at $'+fmt(name,a.price)+'</span></button><button class="sell" onclick="openTrade(\'SELL\')">SELL<br><span style="font-size:12px">at $'+fmt(name,a.price)+'</span></button></div>';
- html+='<div class="card"><div class="tab"><button id="tabOpen" class="'+(currentTab==='open'?'active':'')+'" onclick="showTab(\'open\')">Open Trades</button><button id="tabHist" class="'+(currentTab==='hist'?'active':'')+'" onclick="showTab(\'hist\')">History</button></div><div id="trades">No trades</div></div>';
+ html+='<div class="card"><div class="tab"><button id="tabOpen" class="'+(currentTab==='open'?'active':'')+'" onclick="showTab(\'open\')">Open Trades</button><button id="tabHist" class="'+(currentTab==='hist'?'active':'')+'" onclick="showTab(\'hist\')">History</button><button id="tabTrans" class="'+(currentTab==='trans'?'active':'')+'" onclick="showTab(\'trans\')">Money</button></div><div id="trades">No trades</div></div>';
  document.getElementById('app').innerHTML=html;
  var te=document.getElementById('trades');
  if(currentTab==='open'){ var th=''; var found=false; for(var ti=0;ti<trades.length;ti++) if(trades[ti].name===name){ found=true; th+=tradeRow(trades[ti],ti); } te.innerHTML=found?th:'No trades on '+name+' yet'; }
- else { var hh=''; var f2=false; for(var hj=closedTrades.length-1;hj>=0;hj--) if(closedTrades[hj].name===name){ f2=true; hh+=histRow(closedTrades[hj]); } te.innerHTML=f2?hh:'No history on '+name+' yet'; }
+ else if(currentTab==='hist'){ var hh=''; var f2=false; for(var hj=closedTrades.length-1;hj>=0;hj--) if(closedTrades[hj].name===name){ f2=true; hh+=histRow(closedTrades[hj]); } te.innerHTML=f2?hh:'No history on '+name+' yet'; }
+ else { var mm=''; var f3=false; for(var mk=moneyTxns.length-1;mk>=0;mk--){ f3=true; mm+=txnRow(moneyTxns[mk]); } te.innerHTML=f3?mm:'No deposits / withdrawals yet'; }
 }
 function setTF(t){ timeframe=t; if(selected) openDetail(selected); else renderList(); }
 function back(){ selected=null; location.reload(); }
@@ -187,4 +220,4 @@ renderList();
 }catch(e){ showErr(e.message); }
 </script>
 </body>
- </html>
+</html>
