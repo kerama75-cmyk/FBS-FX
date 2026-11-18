@@ -1,10 +1,10 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>FBS FX</title>
-<meta name="theme-color" content="#131722">
+<meta name="theme-color" content="#0a0f1e">
 <link rel="manifest" href="/manifest.json">
-<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="FBS FX"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1628/1628613.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="FBS FX">
+<link rel="apple-touch-icon" href="/logo.png">
 <style>
 body{font-family:Arial;background:#0a0f1e;color:#fff;padding:14px;margin:0;padding-bottom:85px}
 .top{display:flex;gap:8px}.top button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:bold}.demo{background:#2a3350;color:#fff}.real{background:#ffaa00}
@@ -27,15 +27,40 @@ canvas{width:100%;height:340px;background:#131722;border:0;border-radius:0;displ
 .bottomNav button{flex:1;background:none;border:0;color:#aaa;font-size:11px}.bottomNav button.active{color:#00d084;font-weight:bold}
 .accRow{background:#1e2745;padding:14px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
 div[class*="netlify"], a[href*="netlify"], .netlify-badge{display:none !important}
-/* TRADE - NO FRAME FULL SCREEN LIKE FBS */
 #trade .box{padding:0;margin:0;max-width:100%;border-radius:0;background:#131722}
 #trade .pad{padding:14px 14px 0 14px}
 #trade .pad2{padding:0 14px 14px 14px}
-#trade canvas{margin:0;width:100%}
+@keyframes zoomIn{from{transform:scale(0.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(0,208,132,0.3)}50%{box-shadow:0 0 50px rgba(0,208,132,0.7)}}
+@keyframes buyPop{0%{transform:scale(1)}50%{transform:scale(1.15);box-shadow:0 0 30px #00d084}100%{transform:scale(1)}}
+@keyframes sellPop{0%{transform:scale(1)}50%{transform:scale(1.15);box-shadow:0 0 30px #ff444f}100%{transform:scale(1)}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes confetti{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-80px) scale(1.3);opacity:0}}
+.premiumBal{background:linear-gradient(135deg,#141b32,#1e2745 50%,#0f2a1e);border:1px solid #00d08455;border-radius:16px;padding:16px;margin:12px 0;position:relative;overflow:hidden}
+.premiumBal:before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(0,208,132,0.25),transparent);border-radius:50%}
+.statBox{background:#1e2745;padding:10px;border-radius:10px;text-align:center;flex:1}
+.tradeAnim{animation:buyPop 0.5s ease}
+.tradeAnimSell{animation:sellPop 0.5s ease}
+.profitFlash{animation:slideUp 0.4s ease}
 </style></head><body>
 
+<!-- SPLASH - BLUE DIAMOND -->
+<div id="splash" style="position:fixed;inset:0;background:#0a0f1e;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+  <img src="/logo.png" onerror="this.style.display='none';document.getElementById('fallbackLogo').style.display='flex'" style="width:160px;height:160px;border-radius:28px;animation:zoomIn 0.8s ease, pulseGlow 2s infinite">
+  <div id="fallbackLogo" style="display:none;width:150px;height:150px;border-radius:28px;background:linear-gradient(135deg,#141b32,#1e2745);align-items:center;justify-content:center;font-size:70px">💎</div>
+  <h1 style="font-size:42px;margin:18px 0 4px;font-weight:900">FBS <span style="color:#00d084">FX</span></h1>
+  <p style="color:#aaa;margin:0;font-size:13px">💎 Premium Trading • Forex • Gold • Crypto</p>
+  <div style="width:140px;height:4px;background:#1e2745;border-radius:10px;margin-top:26px;overflow:hidden"><div id="loadBar" style="width:0%;height:100%;background:linear-gradient(90deg,#00d084,#0088ff);border-radius:10px;transition:width 2.5s"></div></div>
+  <p id="loadTxt" style="color:#888;font-size:12px;margin-top:10px">Loading markets...</p>
+  <p style="color:#444;font-size:11px;margin-top:22px;position:absolute;bottom:24px">FBS FX v1.0 • Secure Trading • 18+</p>
+</div>
+
+<!-- TRADE SUCCESS POPUP -->
+<div id="tradePopup" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#141b32;border:2px solid #00d084;padding:24px;border-radius:20px;z-index:9999;text-align:center;box-shadow:0 0 50px rgba(0,208,132,0.5);animation:slideUp 0.4s ease">
+<div style="font-size:50px" id="popupEmoji">✅</div><h2 id="popupTitle" style="margin:8px 0">BUY OPENED!</h2><p id="popupDesc" style="color:#aaa;margin:0">0.01 lots EUR/USD</p><p style="color:#00ff88;font-size:13px">Good luck trader! 🍀</p></div>
+
 <div id="loginScreen">
-<div style="text-align:center;padding:30px 0 10px"><div style="font-size:55px">📈</div><h1 style="margin:5px 0;font-size:32px">FBS <span style="color:#00d084">FX</span></h1><p style="color:#aaa;margin:0">Trade Forex • Gold • Crypto • Indices</p><div style="background:#141b32;padding:10px;border-radius:10px;margin:14px 0;font-size:13px">⭐ 4.9 | 50K+ Traders | Min Deposit $1<br>⚡ Instant M-Pesa Paybill 400200</div></div>
+<div style="text-align:center;padding:20px 0 10px"><img src="/logo.png" onerror="this.style.display='none'" style="width:90px;height:90px;border-radius:20px;box-shadow:0 0 25px rgba(0,208,132,0.4)"><div style="font-size:32px;margin:6px 0 0;font-weight:900">FBS <span style="color:#00d084">FX</span></div><p style="color:#aaa;margin:4px 0 0;font-size:13px">💎 Premium Trading</p><div style="background:#141b32;padding:10px;border-radius:10px;margin:14px 0;font-size:13px">⭐ 4.9 | 50K+ Traders | Min Deposit $1<br>⚡ Instant M-Pesa Paybill 400200</div></div>
 <div class="card">
 <h3 style="margin:0 0 10px">Login / Create Account</h3>
 <label>Phone / Email</label><input id="loginUser" placeholder="07XX XXX XXX or email">
@@ -48,23 +73,31 @@ div[class*="netlify"], a[href*="netlify"], .netlify-badge{display:none !importan
 <h3 style="margin:0">📱 Download FBS FX App</h3><p style="font-size:13px;color:#aaa">Install on your phone - trade faster, works full-screen.</p>
 <button class="btn green" onclick="installApp()">⬇ INSTALL APP NOW</button>
 <button class="btn white" onclick="showInstallHelp()">How to Install?</button>
-<div id="installHelp" style="display:none;font-size:13px;background:#0f1730;padding:10px;border-radius:8px;margin-top:8px"><b>Android Chrome:</b> Tap ⋮ (top right) → Install app / Add to Home Screen → Install<br><br><b>iPhone Safari:</b> Tap Share ⬆ → Add to Home Screen → Add</div>
+<div id="installHelp" style="display:none;font-size:13px;background:#0f1730;padding:10px;border-radius:8px;margin-top:8px"><b>Android Chrome:</b> Tap ⋮ → Install app / Add to Home Screen → Install<br><br><b>iPhone Safari:</b> Tap Share ⬆ → Add to Home Screen → Add</div>
 <p style="font-size:12px;color:#00ff88;text-align:center" id="installStatus">Tap INSTALL APP - if no popup, use ⋮ menu</p>
 </div>
 <button class="btn blue" onclick="doLogin()">Continue Without Login → Demo</button>
+<button class="btn purple" onclick="openAdmin()">👑 ADMIN PANEL</button>
 </div>
 
 <div id="mainApp" style="display:none">
 <div style="display:flex;justify-content:space-between;align-items:center"><b>👋 Hi, <span id="userName">Trader</span></b><span style="font-size:12px;color:#00ff88">● Live</span></div>
-<div class="installBar" id="installBar"><div><b>📱 Get The App</b><br><small>Faster trading + full-screen</small></div><button onclick="installApp()" style="background:#000;color:#fff;border:0;padding:10px 16px;border-radius:8px;font-weight:bold">INSTALL</button></div>
+<div class="installBar"><div><b>📱 Get The App</b><br><small>Faster trading + full-screen</small></div><button onclick="installApp()" style="background:#000;color:#fff;border:0;padding:10px 16px;border-radius:8px;font-weight:bold">INSTALL</button></div>
 <div class="top"><button class="demo" onclick="setMode('DEMO')">DEMO</button><button class="real" onclick="setMode('REAL')">REAL</button></div>
-<div class="card">
-<b style="font-size:19px"><span id="modeTxt">Real</span> Balance: $<span id="bal">794.00</span></b><br>
-<span style="color:#aaa">Equity: $<span id="equity">794.00</span> | Margin: $<span id="margin">0.00</span><br>Floating: $<span id="float">0.00</span><br>Today: $<span id="today">0.00</span> | Closed: <span id="closed">0</span></span>
+
+<!-- 1. PREMIUM HOME -->
+<div class="premiumBal">
+<div style="display:flex;justify-content:space-between"><span style="color:#aaa;font-size:13px"><span id="modeTxt">Real</span> Balance</span><span style="background:#00d084;color:#000;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:bold">💎 VIP</span></div>
+<b style="font-size:32px" id="balBig">$794.00</b>
+<div style="font-size:13px;color:#aaa;margin-top:4px">Equity: $<span id="equity">794.00</span> • Margin: $<span id="margin">0.00</span></div>
+<div style="display:flex;gap:8px;margin-top:12px"><div class="statBox">Floating<br><b id="float" style="color:#00ff88">$0.00</b></div><div class="statBox">Today<br><b id="today" style="color:#00ff88">$0.00</b></div><div class="statBox">Closed<br><b id="closed">0</b></div></div>
+<div style="display:flex;gap:8px;margin-top:10px"><button onclick="openModal('dep')" style="flex:1;background:#00d084;border:0;padding:12px;border-radius:10px;font-weight:bold">💰 DEPOSIT</button><button onclick="openModal('wd')" style="flex:1;background:#ffaa00;border:0;padding:12px;border-radius:10px;font-weight:bold">💸 WITHDRAW</button></div>
+<div style="display:none">Balance: $<span id="bal">794.00</span></div>
 </div>
+
 <h3 style="margin:16px 0 4px">📊 Markets</h3>
 <input style="width:100%;padding:12px;border-radius:10px;border:0;background:#1e2745;color:#fff;box-sizing:border-box;margin:8px 0" id="searchPair" placeholder="🔍 Search pair... EUR, Gold, BTC..." oninput="renderPairs()">
-<div class="cat" id="catBar"><button class="active" onclick="setCat('All',this)">All</button><button onclick="setCat('Forex',this)">Forex</button><button onclick="setCat('Gold',this)">Gold</button><button onclick="setCat('Crypto',this)">Crypto</button><button onclick="setCat('Indices',this)">Indices</button><button onclick="setCat('Volatility',this)">Volatility</button></div>
+<div class="cat"><button class="active" onclick="setCat('All',this)">All</button><button onclick="setCat('Forex',this)">Forex</button><button onclick="setCat('Gold',this)">Gold</button><button onclick="setCat('Crypto',this)">Crypto</button><button onclick="setCat('Indices',this)">Indices</button><button onclick="setCat('Volatility',this)">Volatility</button></div>
 <div id="pairs"></div>
 <div class="card"><b>Open Positions</b><div id="homePositions" style="font-size:13px;color:#aaa">No open positions</div></div>
 </div>
@@ -77,11 +110,22 @@ div[class*="netlify"], a[href*="netlify"], .netlify-badge{display:none !importan
 <div class="accRow" onclick="alert('KYC - Upload ID + Selfie')"><span>🪪 <b>Verify KYC</b><br><small style="color:#aaa">Upload ID + Selfie</small></span><span>›</span></div>
 <div class="accRow" onclick="alert('Your link: https://fbsfx.netlify.app/?ref=YOURID - Earn $5')"><span>🎁 <b>Invite - Earn $5</b><br><small style="color:#aaa">Share your link</small></span><span>›</span></div>
 <div class="accRow" onclick="installApp()"><span>📱 <b>Download App</b><br><small style="color:#aaa">Install on home screen</small></span><span>›</span></div>
+<div class="accRow" onclick="openAdmin()"><span>👑 <b>Admin Panel</b><br><small style="color:#aaa">Manage users, deposits, balances</small></span><span>›</span></div>
 <div class="accRow" onclick="logout()"><span>🚪 <b>Logout</b></span><span>›</span></div>
 <div class="card" style="font-size:13px;color:#aaa">M-Pesa Paybill: <b style="color:#fff">400200</b><br>Account No: <b style="color:#fff">01101170218001</b></div>
 </div>
 
-<!-- TRADE - NO FRAME -->
+<!-- ADMIN PANEL -->
+<div id="admin" class="modal"><div class="box"><h2>👑 Admin Panel</h2>
+<div id="adminLogin"><label>Admin PIN (try 1234)</label><input id="adminPin" type="password" placeholder="1234"><button class="btn green" onclick="checkAdmin()">Unlock Admin</button><button class="btn white" onclick="closeModal('admin')">Close</button></div>
+<div id="adminContent" style="display:none">
+<div style="background:#0f1730;padding:12px;border-radius:10px"><b>Total Users:</b> <span id="adminUsers">1,247</span><br><b>Total Deposits:</b> $12,450<br><b>Total Withdraws:</b> $8,200<br><b>Live Trades Now:</b> <span id="adminLive">0</span></div>
+<h3>Set User Balance</h3><label>User Phone / Name</label><input id="adminUser" placeholder="Trader phone"><label>New Balance $</label><input id="adminBal" type="number" placeholder="1000"><button class="btn green" onclick="adminSetBal()">✅ Update Balance</button>
+<h3>Recent Deposits</h3><div id="adminDeps"></div>
+<h3>Recent Withdrawals</h3><div id="adminWds"></div>
+<button class="btn white" onclick="closeModal('admin')">Close Admin</button>
+</div></div></div>
+
 <div id="trade" class="modal"><div class="box">
 <div class="pad">
 <button onclick="closeModal('trade')" style="float:right;background:#2a3350;color:#fff;border:0;padding:8px 12px;border-radius:8px">✕ Close</button>
@@ -98,22 +142,23 @@ div[class*="netlify"], a[href*="netlify"], .netlify-badge{display:none !importan
 <label>Take Profit</label><input id="tp" type="number" placeholder="e.g 1.1100">
 <label>Stop Loss</label><input id="sl" type="number" placeholder="e.g 1.0900">
 <div style="background:#0f1730;padding:10px;border-radius:10px;font-size:13px;margin:8px 0">Margin: $<span id="marginNeed">1.10</span> | Profit per 100 pips: $<span id="estProfit">10.00</span></div>
-<div class="tradeBtns"><button class="green" onclick="placeTrade('BUY')">▲ BUY<br><small id="buyPrice">1.0996</small></button><button class="red" onclick="placeTrade('SELL')">▼ SELL<br><small id="sellPrice">1.0994</small></button></div>
+<!-- 2. ANIMATED BUY/SELL -->
+<div class="tradeBtns"><button id="buyBtn" class="green" onclick="placeTrade('BUY')">▲ BUY<br><small id="buyPrice">1.0996</small></button><button id="sellBtn" class="red" onclick="placeTrade('SELL')">▼ SELL<br><small id="sellPrice">1.0994</small></button></div>
 <div id="openTrades" style="margin-top:12px"></div>
 </div>
 </div></div>
 
 <div id="dep" class="modal"><div class="box"><h2>Deposit</h2>
 <div class="tabs"><button id="d-mpesa" class="active" onclick="setPay('dep','mpesa')">M-Pesa</button><button id="d-bank" onclick="setPay('dep','bank')">Bank</button><button id="d-crypto" onclick="setPay('dep','crypto')">Crypto</button></div>
-<div id="dep-mpesa"><div class="paybox"><b style="color:#00ff88;font-size:16px">M-PESA PAYBILL</b><br><br>Paybill Number: <b style="font-size:20px">400200</b> <button onclick="navigator.clipboard.writeText('400200');alert('Copied 400200')" style="background:#00d084;border:0;padding:4px 8px;border-radius:6px;font-weight:bold">Copy</button><br>Account Number: <b style="font-size:18px">01101170218001</b> <button onclick="navigator.clipboard.writeText('01101170218001');alert('Copied Account')" style="background:#00d084;border:0;padding:4px 8px;border-radius:6px;font-weight:bold">Copy</button><br><br><span style="color:#aaa;font-size:13px">1. Go to M-Pesa → Lipa na M-Pesa → Paybill<br>2. Enter Paybill <b style="color:#fff">400200</b><br>3. Account: <b style="color:#fff">01101170218001</b><br>4. Enter Amount → Send<br>5. Enter M-Pesa Code below</span><br><br><label>Amount KES</label><input type="number" placeholder="1000"><label>M-Pesa Code (e.g QK7...)</label><input placeholder="QK..."><button class="btn green" onclick="alert('Deposit Request Sent - Admin will confirm in 5 mins');closeModal('dep')">✅ Confirm Deposit</button></div></div>
-<div id="dep-bank" style="display:none"><div class="paybox">Bank: <b>Equity</b> Acc: <b>01101170218001</b><br><label>Amount KES</label><input type="number" placeholder="5000"><label>Ref / Code</label><input placeholder="Ref"><button class="btn green" onclick="alert('Deposit Request Sent');closeModal('dep')">Confirm Deposit</button></div></div>
+<div id="dep-mpesa"><div class="paybox"><b style="color:#00ff88;font-size:16px">M-PESA PAYBILL</b><br><br>Paybill: <b style="font-size:20px">400200</b> <button onclick="navigator.clipboard.writeText('400200');alert('Copied 400200')" style="background:#00d084;border:0;padding:4px 8px;border-radius:6px;font-weight:bold">Copy</button><br>Account: <b>01101170218001</b> <button onclick="navigator.clipboard.writeText('01101170218001');alert('Copied')" style="background:#00d084;border:0;padding:4px 8px;border-radius:6px;font-weight:bold">Copy</button><br><br><label>Amount KES</label><input id="depAmt" type="number" placeholder="1000"><label>M-Pesa Code</label><input id="depCode" placeholder="QK..."><button class="btn green" onclick="submitDeposit()">✅ Confirm Deposit</button></div></div>
+<div id="dep-bank" style="display:none"><div class="paybox">Bank: <b>Equity</b> Acc: <b>01101170218001</b><br><label>Amount KES</label><input type="number" placeholder="5000"><label>Ref</label><input placeholder="Ref"><button class="btn green" onclick="alert('Deposit Request Sent');closeModal('dep')">Confirm Deposit</button></div></div>
 <div id="dep-crypto" style="display:none"><div class="paybox">USDT TRC20: <b>TXXXX...YOUR WALLET</b><br><label>Amount USD</label><input type="number" placeholder="50"><label>TxID</label><input placeholder="TxID"><button class="btn green" onclick="alert('Deposit Request Sent');closeModal('dep')">Confirm Deposit</button></div></div>
 <button class="btn white" onclick="closeModal('dep')">Close</button></div></div>
 
 <div id="wd" class="modal"><div class="box"><h2>Withdraw</h2>
 <div class="tabs"><button id="w-mpesa" class="active" onclick="setPay('wd','mpesa')">M-Pesa</button><button id="w-bank" onclick="setPay('wd','bank')">Bank</button><button id="w-crypto" onclick="setPay('wd','crypto')">Crypto</button></div>
-<div id="wd-mpesa"><label>Amount USD</label><input type="number" placeholder="20"><label>M-Pesa Number</label><input placeholder="07XX XXX XXX"><button class="btn orange" onclick="alert('Withdrawal Request Sent - You will receive via M-Pesa');closeModal('wd')">Request Withdrawal</button></div>
-<div id="wd-bank" style="display:none"><label>Amount USD</label><input type="number" placeholder="100"><label>Bank Account - 01101170218001</label><input placeholder="Account No"><button class="btn orange" onclick="alert('Withdrawal Request Sent');closeModal('wd')">Request Withdrawal</button></div>
+<div id="wd-mpesa"><label>Amount USD</label><input id="wdAmt" type="number" placeholder="20"><label>M-Pesa Number</label><input id="wdPhone" placeholder="07XX XXX XXX"><button class="btn orange" onclick="submitWithdraw()">Request Withdrawal</button></div>
+<div id="wd-bank" style="display:none"><label>Amount USD</label><input type="number" placeholder="100"><label>Bank Account</label><input placeholder="Account No"><button class="btn orange" onclick="alert('Withdrawal Request Sent');closeModal('wd')">Request Withdrawal</button></div>
 <div id="wd-crypto" style="display:none"><label>Amount USD</label><input type="number" placeholder="50"><label>Wallet Address</label><input placeholder="USDT Address"><button class="btn orange" onclick="alert('Withdrawal Request Sent');closeModal('wd')">Request Withdrawal</button></div>
 <button class="btn white" onclick="closeModal('wd')">Close</button></div></div>
 
@@ -122,42 +167,39 @@ div[class*="netlify"], a[href*="netlify"], .netlify-badge{display:none !importan
 </div>
 
 <script>
+document.getElementById('loadBar').style.width='100%';
+let loadMsgs=['Loading markets...','Connecting to server...','Loading FBS FX...'];
+let li=0; let loadInt=setInterval(()=>{ li++; if(li<3) document.getElementById('loadTxt').innerText=loadMsgs[li]; },900);
+setTimeout(()=>{ clearInterval(loadInt); let s=document.getElementById('splash'); s.style.transition='opacity 0.5s'; s.style.opacity='0'; setTimeout(()=>{ s.style.display='none'; },500); },2900);
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault(); deferredPrompt=e; document.getElementById('installStatus').innerText='✅ Ready to Install - Tap INSTALL APP';});
-function installApp(){ if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(r=>{ if(r.outcome=='accepted') alert('✅ App Installed! Check home screen.'); deferredPrompt=null; }); } else { let h=document.getElementById('installHelp'); if(h) h.style.display='block'; alert('To Install:\n\nAndroid: Tap ⋮ (top right) → Install app / Add to Home Screen → Install\n\niPhone: Tap Share ⬆ → Add to Home Screen'); } }
+function installApp(){ if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(r=>{ if(r.outcome=='accepted') alert('✅ App Installed! Check home screen.'); deferredPrompt=null; }); } else { let h=document.getElementById('installHelp'); if(h) h.style.display='block'; alert('To Install:\n\nAndroid: Tap ⋮ → Install app / Add to Home Screen → Install\n\niPhone: Tap Share ⬆ → Add to Home Screen'); } }
 function showInstallHelp(){ document.getElementById('installHelp').style.display='block'; }
 function doLogin(){ let u=document.getElementById('loginUser').value||'Trader'; localStorage.setItem('fbsUser',u); document.getElementById('userName').innerText=u; document.getElementById('accName').innerText=u; document.getElementById('loginScreen').style.display='none'; document.getElementById('mainApp').style.display='block'; document.getElementById('bottomNav').style.display='flex'; }
 function logout(){ localStorage.removeItem('fbsUser'); location.reload(); }
 if(localStorage.getItem('fbsUser')){ document.getElementById('loginUser').value=localStorage.getItem('fbsUser'); doLogin(); }
 function showTab(tab,btn){ document.querySelectorAll('.bottomNav button').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); document.getElementById('mainApp').style.display=tab=='home'?'block':'none'; document.getElementById('accountScreen').style.display=tab=='account'?'block':'none'; if(tab=='trade') openTrade('EUR/USD'); if(tab=='home') window.scrollTo({top:0}); }
+// ADMIN
+let deposits=[], withdraws=[];
+function openAdmin(){ openModal('admin'); document.getElementById('adminLogin').style.display='block'; document.getElementById('adminContent').style.display='none'; }
+function checkAdmin(){ if(document.getElementById('adminPin').value=='1234'){ document.getElementById('adminLogin').style.display='none'; document.getElementById('adminContent').style.display='block'; renderAdmin(); } else alert('Wrong PIN! Try 1234'); }
+function renderAdmin(){ document.getElementById('adminLive').innerText=openPos.length; document.getElementById('adminDeps').innerHTML=deposits.length?deposits.map(d=>`<div class="paybox">${d.user} - KES ${d.amt} - Code: ${d.code} <button onclick="approveDep('${d.id}')" style="background:#00d084;border:0;padding:6px 10px;border-radius:6px;font-weight:bold">Approve</button></div>`).join(''):'No deposits yet'; document.getElementById('adminWds').innerHTML=withdraws.length?withdraws.map(w=>`<div class="paybox">${w.user} - $${w.amt} to ${w.phone} <button onclick="approveWd('${w.id}')" style="background:#ffaa00;border:0;padding:6px 10px;border-radius:6px;font-weight:bold">Pay</button></div>`).join(''):'No withdrawals yet'; }
+function submitDeposit(){ let amt=document.getElementById('depAmt').value, code=document.getElementById('depCode').value; if(!amt||!code) return alert('Enter Amount + M-Pesa Code'); deposits.push({id:'D'+Date.now(), user:localStorage.getItem('fbsUser')||'Trader', amt, code}); alert('Deposit Request Sent - Admin will confirm in 5 mins'); closeModal('dep'); }
+function submitWithdraw(){ let amt=document.getElementById('wdAmt').value, ph=document.getElementById('wdPhone').value; if(!amt||!ph) return alert('Enter Amount + Phone'); withdraws.push({id:'W'+Date.now(), user:localStorage.getItem('fbsUser')||'Trader', amt, phone:ph}); alert('Withdrawal Request Sent - You will receive via M-Pesa'); closeModal('wd'); }
+function approveDep(id){ let d=deposits.find(x=>x.id==id); let usd=Math.round(d.amt/130); setBal(getBal()+usd); deposits=deposits.filter(x=>x.id!=id); alert('Approved! +$'+usd+' added to user'); renderAdmin(); updatePositions(); }
+function approveWd(id){ withdraws=withdraws.filter(x=>x.id!=id); alert('Marked as Paid ✅'); renderAdmin(); }
+function adminSetBal(){ let v=parseFloat(document.getElementById('adminBal').value); if(!v) return alert('Enter balance'); setBal(v); alert('Balance updated to $'+v); }
 let bal=794, demoBal=10000, mode='REAL', closed=0, todayP=0, curPair='EUR/USD', chartType='candle', tickCount=0, openPos=[], curCat='All';
-let pairs=[
- {s:'EUR/USD', p:1.0996, ch:-0.02, cat:'Forex', dec:4},
- {s:'GBP/USD', p:1.3196, ch:-0.03, cat:'Forex', dec:4},
- {s:'USD/JPY', p:159.41, ch:0.01, cat:'Forex', dec:2},
- {s:'AUD/USD', p:0.6520, ch:0.12, cat:'Forex', dec:4},
- {s:'USD/CAD', p:1.3850, ch:-0.05, cat:'Forex', dec:4},
- {s:'EUR/GBP', p:0.8330, ch:0.08, cat:'Forex', dec:4},
- {s:'NZD/USD', p:0.5900, ch:0.15, cat:'Forex', dec:4},
- {s:'GBP/JPY', p:210.45, ch:0.22, cat:'Forex', dec:2},
- {s:'XAU/USD', p:2650.50, ch:0.35, cat:'Gold', dec:2},
- {s:'XAG/USD', p:31.20, ch:-0.20, cat:'Gold', dec:2},
- {s:'BTC/USD', p:97450, ch:1.20, cat:'Crypto', dec:0},
- {s:'ETH/USD', p:3420, ch:0.85, cat:'Crypto', dec:2},
- {s:'US30', p:44500, ch:0.45, cat:'Indices', dec:0},
- {s:'NAS100', p:21450, ch:0.60, cat:'Indices', dec:0},
- {s:'Volatility 100', p:845.22, ch:0.45, cat:'Volatility', dec:2},
- {s:'Volatility 75', p:452.10, ch:-0.12, cat:'Volatility', dec:2},
-];
+let pairs=[ {s:'EUR/USD', p:1.0996, ch:-0.02, cat:'Forex', dec:4},{s:'GBP/USD', p:1.3196, ch:-0.03, cat:'Forex', dec:4},{s:'USD/JPY', p:159.41, ch:0.01, cat:'Forex', dec:2},{s:'AUD/USD', p:0.6520, ch:0.12, cat:'Forex', dec:4},{s:'USD/CAD', p:1.3850, ch:-0.05, cat:'Forex', dec:4},{s:'EUR/GBP', p:0.8330, ch:0.08, cat:'Forex', dec:4},{s:'NZD/USD', p:0.5900, ch:0.15, cat:'Forex', dec:4},{s:'GBP/JPY', p:210.45, ch:0.22, cat:'Forex', dec:2},{s:'XAU/USD', p:2650.50, ch:0.35, cat:'Gold', dec:2},{s:'XAG/USD', p:31.20, ch:-0.20, cat:'Gold', dec:2},{s:'BTC/USD', p:97450, ch:1.20, cat:'Crypto', dec:0},{s:'ETH/USD', p:3420, ch:0.85, cat:'Crypto', dec:2},{s:'US30', p:44500, ch:0.45, cat:'Indices', dec:0},{s:'NAS100', p:21450, ch:0.60, cat:'Indices', dec:0},{s:'Volatility 100', p:845.22, ch:0.45, cat:'Volatility', dec:2},{s:'Volatility 75', p:452.10, ch:-0.12, cat:'Volatility', dec:2},];
 let prices={}, candles={}, history={};
-pairs.forEach(p=>{ prices[p.s]=p.p; history[p.s]=Array.from({length:40},()=>p.p); candles[p.s]=[]; let base=p.p; for(let i=0;i:0;i++){ } for(let i=0;i<50;i++){ let o=base, c=base+(Math.random()-0.5)*base*0.0012; let h=Math.max(o,c)+Math.random()*base*0.0006; let l=Math.min(o,c)-Math.random()*base*0.0006; candles[p.s].push({o,h,l,c}); base=c; } });
+pairs.forEach(p=>{ prices[p.s]=p.p; history[p.s]=Array.from({length:40},()=>p.p); candles[p.s]=[]; let base=p.p; for(let i=0;i<50;i++){ let o=base, c=base+(Math.random()-0.5)*base*0.0012; let h=Math.max(o,c)+Math.random()*base*0.0006; let l=Math.min(o,c)-Math.random()*base*0.0006; candles[p.s].push({o,h,l,c}); base=c; } });
 function setCat(cat,btn){ curCat=cat; document.querySelectorAll('.cat button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderPairs(); }
 function renderPairs(){ let q=(document.getElementById('searchPair')?.value||'').toLowerCase(); let list=pairs.filter(p=> (curCat=='All'||p.cat==curCat) && p.s.toLowerCase().includes(q)); document.getElementById('pairs').innerHTML=list.map(p=>{ let c=p.ch>=0?'#00ff88':'#ff444f'; let a=p.ch>=0?'▲':'▼'; return `<div class="pair" onclick="openTrade('${p.s}')"><div><b>${p.s}</b><br><small style="color:#aaa">${p.cat} • Tap to open ></small></div><div style="text-align:right"><b>$${prices[p.s].toFixed(p.dec)}</b><br><span style="color:${c}">${a} ${p.ch.toFixed(2)}%</span></div></div>` }).join(''); }
 renderPairs();
 setInterval(()=>{ tickCount++; pairs.forEach(p=>{ let move=(Math.random()-0.5)*p.p*0.0009; prices[p.s]+=move; p.ch+=(Math.random()-0.5)*0.02; history[p.s].push(prices[p.s]); if(history[p.s].length>40) history[p.s].shift(); let arr=candles[p.s]; let last=arr[arr.length-1]; last.c=prices[p.s]; last.h=Math.max(last.h,prices[p.s]); last.l=Math.min(last.l,prices[p.s]); if(tickCount%5==0){ arr.push({o:prices[p.s],h:prices[p.s],l:prices[p.s],c:prices[p.s]}); if(arr.length>50) arr.shift(); } }); if(document.getElementById('mainApp').style.display!='none') renderPairs(); updatePositions(); if(document.getElementById('trade').style.display=='block'){ updateTradeUI(); drawChart(); } },1000);
-function setMode(m){mode=m; document.getElementById('modeTxt').innerText=m; document.getElementById('bal').innerText=(m=='REAL'?bal:demoBal).toFixed(2); document.getElementById('accBal').innerText=(m=='REAL'?bal:demoBal).toFixed(2); updatePositions();}
+function setMode(m){mode=m; document.getElementById('modeTxt').innerText=m; document.getElementById('bal').innerText=(m=='REAL'?bal:demoBal).toFixed(2); document.getElementById('balBig').innerText='$'+(m=='REAL'?bal:demoBal).toFixed(2); document.getElementById('accBal').innerText=(m=='REAL'?bal:demoBal).toFixed(2); updatePositions();}
 function getBal(){return mode=='REAL'?bal:demoBal}
-function setBal(v){ if(mode=='REAL') bal=v; else demoBal=v; document.getElementById('bal').innerText=v.toFixed(2); document.getElementById('accBal').innerText=v.toFixed(2); }
+function setBal(v){ if(mode=='REAL') bal=v; else demoBal=v; document.getElementById('bal').innerText=v.toFixed(2); document.getElementById('balBig').innerText='$'+v.toFixed(2); document.getElementById('accBal').innerText=v.toFixed(2); }
 function setLot(v){document.getElementById('lot').value=v; updateTradeUI();}
 function openModal(id){document.getElementById(id).style.display='block'}
 function closeModal(id){document.getElementById(id).style.display='none'}
@@ -217,10 +259,25 @@ function drawChart(){
   ctx.fillStyle='#787B86'; ctx.font='10px Arial';
   for(let i=0;i<5;i++){ let v=allL+(range*i/4); let y=padTop+((allH-v)/range)*(H-padTop-padBot); ctx.fillText(v.toFixed(p.dec), chartW+5, y+3); }
 }
-function placeTrade(dir){ let lot=parseFloat(document.getElementById('lot').value); if(!lot||lot<=0) return alert('Enter lot'); let entry=prices[curPair]; let margin=lot*entry*10; if(margin>getBal()) return alert('Not enough margin! Need $'+margin.toFixed(2)); let tp=document.getElementById('tp').value, sl=document.getElementById('sl').value; openPos.push({id:'P'+Date.now(), pair:curPair, dir, lot, entry, tp:tp?parseFloat(tp):null, sl:sl?parseFloat(sl):null, mode:mode}); alert(dir+' OPENED!\n'+lot+' lots '+curPair+' @ '+entry.toFixed(4)); updatePositions(); }
+function placeTrade(dir){
+  let lot=parseFloat(document.getElementById('lot').value); if(!lot||lot<=0) return alert('Enter lot');
+  let entry=prices[curPair]; let margin=lot*entry*10; if(margin>getBal()) return alert('Not enough margin! Need $'+margin.toFixed(2));
+  let tp=document.getElementById('tp').value, sl=document.getElementById('sl').value;
+  openPos.push({id:'P'+Date.now(), pair:curPair, dir, lot, entry, tp:tp?parseFloat(tp):null, sl:sl?parseFloat(sl):null, mode:mode});
+  // ANIMATION
+  let btn = dir=='BUY'?document.getElementById('buyBtn'):document.getElementById('sellBtn');
+  btn.classList.remove('tradeAnim','tradeAnimSell'); void btn.offsetWidth; btn.classList.add(dir=='BUY'?'tradeAnim':'tradeAnimSell');
+  let pop=document.getElementById('tradePopup');
+  document.getElementById('popupEmoji').innerText=dir=='BUY'?'🚀':'📉';
+  document.getElementById('popupTitle').innerText=dir+' OPENED!';
+  document.getElementById('popupTitle').style.color=dir=='BUY'?'#00d084':'#ff444f';
+  document.getElementById('popupDesc').innerText=lot+' lots '+curPair+' @ '+entry.toFixed(4);
+  pop.style.display='block'; setTimeout(()=>{pop.style.display='none'},1800);
+  updatePositions();
+}
 function calcProfit(pos){ let cur=prices[pos.pair]; let diff=pos.dir=='BUY'?(cur-pos.entry):(pos.entry-cur); let pipSize=pos.pair.includes('JPY')?0.01:pos.pair.includes('BTC')||pos.pair.includes('US30')||pos.pair.includes('NAS')?1:pos.pair.includes('XAU')?0.1:0.0001; return (diff/pipSize)*pos.lot*10; }
-function updatePositions(){ let myPos=openPos.filter(p=>p.mode==mode); let totalFloat=0, totalMargin=0; myPos.forEach(p=>{ totalFloat+=calcProfit(p); totalMargin+=p.lot*p.entry*10; }); document.getElementById('float').innerText=totalFloat.toFixed(2); document.getElementById('margin').innerText=totalMargin.toFixed(2); document.getElementById('equity').innerText=(getBal()+totalFloat).toFixed(2); myPos.slice().forEach(p=>{ let cur=prices[p.pair]; if((p.tp&&((p.dir=='BUY'&&cur>=p.tp)||(p.dir=='SELL'&&cur<=p.tp)))||(p.sl&&((p.dir=='BUY'&&cur<=p.sl)||(p.dir=='SELL'&&cur>=p.sl)))) closePosition(p.id,'TP/SL HIT'); }); let html=myPos.length==0?'No open positions':myPos.map(p=>{ let prof=calcProfit(p); return `<div class="paybox"><b>${p.pair} ${p.dir} ${p.lot} lots</b> @ ${p.entry.toFixed(4)} → ${prices[p.pair].toFixed(4)}<br><b style="color:${prof>=0?'#00ff88':'#ff444f'}">Profit: $${prof.toFixed(2)}</b><br><button onclick="closePosition('${p.id}')" style="background:#ff444f;color:#fff;border:0;padding:8px 14px;border-radius:8px;margin-top:6px;font-weight:bold">✕ CLOSE TRADE</button></div>` }).join(''); document.getElementById('homePositions').innerHTML=html; document.getElementById('openTrades').innerHTML=html; }
-function closePosition(id,reason){ let idx=openPos.findIndex(p=>p.id==id); if(idx==-1) return; let p=openPos[idx]; let prof=calcProfit(p); setBal(getBal()+prof); todayP+=prof; closed++; document.getElementById('today').innerText=todayP.toFixed(2); document.getElementById('closed').innerText=closed; openPos.splice(idx,1); alert((reason||'CLOSED')+'\n'+p.dir+' '+p.pair+' Profit: $'+prof.toFixed(2)); updatePositions(); }
+function updatePositions(){ let myPos=openPos.filter(p=>p.mode==mode); let totalFloat=0, totalMargin=0; myPos.forEach(p=>{ totalFloat+=calcProfit(p); totalMargin+=p.lot*p.entry*10; }); document.getElementById('float').innerText='$'+totalFloat.toFixed(2); document.getElementById('float').style.color=totalFloat>=0?'#00ff88':'#ff444f'; document.getElementById('margin').innerText=totalMargin.toFixed(2); document.getElementById('equity').innerText=(getBal()+totalFloat).toFixed(2); myPos.slice().forEach(p=>{ let cur=prices[p.pair]; if((p.tp&&((p.dir=='BUY'&&cur>=p.tp)||(p.dir=='SELL'&&cur<=p.tp)))||(p.sl&&((p.dir=='BUY'&&cur<=p.sl)||(p.dir=='SELL'&&cur>=p.sl)))) closePosition(p.id,'TP/SL HIT'); }); let html=myPos.length==0?'No open positions':myPos.map(p=>{ let prof=calcProfit(p); return `<div class="paybox profitFlash"><b>${p.pair} ${p.dir} ${p.lot} lots</b> @ ${p.entry.toFixed(4)} → ${prices[p.pair].toFixed(4)}<br><b style="color:${prof>=0?'#00ff88':'#ff444f'}">Profit: $${prof.toFixed(2)}</b><br><button onclick="closePosition('${p.id}')" style="background:#ff444f;color:#fff;border:0;padding:8px 14px;border-radius:8px;margin-top:6px;font-weight:bold">✕ CLOSE TRADE</button></div>` }).join(''); document.getElementById('homePositions').innerHTML=html; document.getElementById('openTrades').innerHTML=html; }
+function closePosition(id,reason){ let idx=openPos.findIndex(p=>p.id==id); if(idx==-1) return; let p=openPos[idx]; let prof=calcProfit(p); setBal(getBal()+prof); todayP+=prof; closed++; document.getElementById('today').innerText='$'+todayP.toFixed(2); document.getElementById('closed').innerText=closed; openPos.splice(idx,1); alert((reason||'CLOSED')+'\n'+p.dir+' '+p.pair+' Profit: $'+prof.toFixed(2)); updatePositions(); }
 </script>
 <script>if('serviceWorker' in navigator){ navigator.serviceWorker.register('/sw.js'); }</script>
 </body></html>
