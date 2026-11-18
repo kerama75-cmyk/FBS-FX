@@ -1,124 +1,145 @@
-<!DOCTYPE html>
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>FBS FX</title>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>FBS FX - Deposit / Withdraw</title>
 <style>
-body{font-family:Arial;background:#0a0f1e;color:#fff;margin:0;padding:30px 14px 100px 14px}
-h1{color:#00d084;margin:0}.card{background:#141b32;padding:14px;border-radius:12px;margin:10px 0}
-.row{display:flex;gap:8px}.buy{flex:1;background:#00d084;color:#000;border:0;padding:16px;border-radius:10px;font-weight:bold;font-size:18px}
-.sell{flex:1;background:#ff3b3b;color:#fff;border:0;padding:16px;border-radius:10px;font-weight:bold;font-size:18px}
-.small{color:#aaa;font-size:13px}.big{font-size:30px;font-weight:bold}.up{color:#00d084}.down{color:#ff3b3b}
-.back{background:#222;border:0;color:#fff;padding:10px 14px;border-radius:8px}
-.tf{display:flex;gap:6px;margin:10px 0}.tf button{flex:1;padding:10px 0;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold}
-.tf button.active{background:#00d084;color:#000}
-input,select{width:100%;padding:12px;border-radius:8px;border:0;margin:6px 0;font-size:16px;background:#1e2745;color:#fff;box-sizing:border-box}
-label{font-size:13px;color:#aaa}.trade{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid #333;padding:10px 0}
-.closebtn{background:#fff;color:#000;border:0;padding:8px 12px;border-radius:6px;font-weight:bold}
-.pnl-box{background:#1e2745;padding:12px;border-radius:8px;margin-top:10px;display:flex;justify-content:space-between}
-.hist{border-top:1px solid #333;padding:8px 0;font-size:14px}
-.badge{font-size:11px;padding:3px 7px;border-radius:5px;font-weight:bold}.badge-tp{background:#00d084;color:#000}
-.badge-sl{background:#ff3b3b;color:#fff}.badge-manual{background:#444;color:#fff}.badge-dep{background:#00d084;color:#000}
-.badge-with{background:#ff9800;color:#000}.badge-verified{background:#00d084;color:#000}.badge-pending{background:#ff9800;color:#000}.badge-not{background:#ff3b3b;color:#fff}
-.tab{display:flex;gap:6px;margin-bottom:10px}.tab button{flex:1;padding:10px;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold}
-.tab button.active{background:#fff;color:#000}canvas{width:100%;display:block;border-radius:8px;background:#0d1428}
-.miniCanvas{height:60px}.bigCanvas{height:280px}.depbtn{flex:1;background:#00d084;color:#000;border:0;padding:14px;border-radius:10px;font-weight:bold}
-.withbtn{flex:1;background:#ff9800;color:#000;border:0;padding:14px;border-radius:10px;font-weight:bold}
-.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:flex-start;justify-content:center;z-index:999;padding:14px;overflow-y:auto}
-.modal.show{display:flex}.modalbox{background:#141b32;padding:18px;border-radius:14px;width:100%;max-width:380px;margin-top:20px}
-.quick{display:flex;gap:6px;margin:8px 0}.quick button{flex:1;padding:10px;border:0;border-radius:8px;background:#1e2745;color:#fff;font-weight:bold}
-.acct{display:flex;gap:6px;margin:10px 0}.acct button{flex:1;padding:12px;border:0;border-radius:10px;background:#1e2745;color:#aaa;font-weight:bold}
-.acct button.activeDemo{background:#00d084;color:#000}.acct button.activeReal{background:#ff9800;color:#000}
-.kycbtn{width:100%;background:#fff;color:#000;border:0;padding:12px;border-radius:10px;font-weight:bold;margin-top:8px}
-.invitebtn{width:100%;background:#7b61ff;color:#fff;border:0;padding:12px;border-radius:10px;font-weight:bold;margin-top:8px}
-.idbox{border:2px dashed #444;border-radius:10px;padding:10px;text-align:center;margin:8px 0;position:relative;overflow:hidden}
-.idbox img{width:100%;border-radius:8px;margin-top:8px;display:none}.step{font-weight:bold;margin:14px 0 4px}
-.linkbox{background:#0a0f1e;padding:12px;border-radius:8px;word-break:break-all;font-size:13px;margin:8px 0}
-.chartWrap{background:#0d1428;border-radius:8px;padding:8px}.legend{display:flex;justify-content:space-between;font-size:11px;color:#888;margin-top:4px}
-.tool{display:flex;gap:6px;margin:8px 0}.tool button{flex:1;padding:8px 0;border:0;border-radius:8px;background:#1e2745;color:#aaa;font-weight:bold;font-size:13px}
-.tool button.active{background:#00d084;color:#000}.mpesaBox{background:#1a5c2a;border:1px solid #00d084;border-radius:10px;padding:12px;margin:10px 0;text-align:center}
+body{font-family:Arial;background:#0a0f1e;color:#fff;padding:14px;margin:0}
+.top{display:flex;gap:8px}.top button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:bold}.demo{background:#2a3350;color:#fff}.real{background:#ffaa00}
+.card{background:#141b32;padding:14px;border-radius:14px;margin:12px 0}
+.btn{width:100%;padding:14px;border:0;border-radius:10px;font-weight:bold;margin:6px 0;font-size:16px;cursor:pointer}
+.green{background:#00d084}.orange{background:#ffaa00}.white{background:#fff}.purple{background:#7c5cff;color:#fff}.red{background:#ff444f;color:#fff}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99;overflow:auto}
+.box{background:#141b32;margin:20px auto;padding:18px;border-radius:16px;max-width:480px}
+input,select,textarea{width:100%;padding:12px;border-radius:8px;border:0;background:#1e2745;color:#fff;margin:6px 0;box-sizing:border-box}
+label{font-size:13px;color:#aaa}
+.tabs{display:flex;gap:6px}.tabs button{flex:1;padding:10px;border:0;border-radius:8px;background:#2a3350;color:#fff;font-weight:bold}.tabs button.active{background:#00d084;color:#000}
+.paybox{background:#0f1730;border:1px dashed #2a3350;padding:12px;border-radius:10px;margin:8px 0}
+.copy{font-size:12px;background:#2a3350;padding:6px 10px;border-radius:6px;float:right}
+.pair{background:#141b32;padding:14px;border-radius:12px;margin:10px 0}
 </style></head><body>
-<div id="modal" class="modal"><div class="modalbox"><h2 id="modalTitle">Deposit</h2>
-<label>Amount ($)</label><input type="number" id="moneyAmt" value="100"><div class="quick"><button onclick="setAmt(10)">$10</button><button onclick="setAmt(50)">$50</button><button onclick="setAmt(100)">$100</button><button onclick="setAmt(500)">$500</button></div>
-<label>Method</label><select id="moneyMethod" onchange="onMethodChange()"><option>M-Pesa Till</option><option>Card</option><option>Bank Transfer</option><option>Crypto</option></select>
-<div id="mpesaSection"><div class="mpesaBox">M-PESA TILL<br><b style="font-size:24px">6636264</b><br><span class="small" style="color:#fff">FBS FX</span><br><button onclick="copyTill()" style="background:#fff;color:#000;border:0;padding:8px 16px;border-radius:8px;font-weight:bold;margin-top:8px">Copy Till</button><div class="small" style="color:#fff;margin-top:8px">M-Pesa > Lipa Na M-Pesa > Buy Goods > Till 6636264<br>Then enter Code below</div></div>
-<label>M-Pesa Code (e.g. QK12345678)</label><input id="mpesaCode" placeholder="QK..." style="text-transform:uppercase">
-<label>Your Phone</label><input id="mpesaPhone" placeholder="+254..." value="+254"></div>
-<div class="small" id="modalNote"></div><div class="row" style="margin-top:12px"><button class="depbtn" id="modalConfirm" onclick="confirmMoney()">Confirm</button><button style="flex:1;background:#444;color:#fff;border:0;padding:14px;border-radius:10px;font-weight:bold" onclick="closeModal()">Cancel</button></div></div></div>
-<div id="kycModal" class="modal"><div class="modalbox"><h2>KYC Verification</h2><div class="small">Required for Real withdrawals</div>
-<div class="step">1. Phone</div><input id="kycPhone" placeholder="+254..." value="+254"><button class="kycbtn" style="background:#00d084" onclick="sendOTP()">Send OTP</button>
-<div id="otpBox" style="display:none"><label>OTP is 123456</label><input id="otpInput" placeholder="123456"><button class="kycbtn" style="background:#00d084" onclick="verifyOTP()">Verify Phone</button></div>
-<div class="small" id="phoneStatus">Phone: Not Verified</div>
-<div class="step">2. ID Front</div><div class="idbox"><span id="frontLabel">Tap to upload ID FRONT</span><input type="file" accept="image/*" onchange="uploadID(this,'front')" style="opacity:0;position:absolute;left:0;top:0;width:100%;height:100%"><img id="frontImg"><div class="small" id="frontStatus"></div></div>
-<div class="step">3. ID Back</div><div class="idbox"><span id="backLabel">Tap to upload ID BACK</span><input type="file" accept="image/*" onchange="uploadID(this,'back')" style="opacity:0;position:absolute;left:0;top:0;width:100%;height:100%"><img id="backImg"><div class="small" id="backStatus"></div></div>
-<div class="small" id="kycStatusText"></div><button class="kycbtn" style="background:#00d084" onclick="submitKYC()">Submit for Verification</button><button class="kycbtn" style="background:#444;color:#fff" onclick="closeKYC()">Close</button></div></div>
-<div id="inviteModal" class="modal"><div class="modalbox"><h2>Invite & Earn $5</h2><div class="linkbox" id="refLink">...</div>
-<button class="kycbtn" style="background:#00d084" onclick="copyLink()">Copy Link</button><a id="waShare" href="#" target="_blank" style="text-decoration:none"><button class="kycbtn" style="background:#25D366;color:#fff">Share on WhatsApp</button></a>
-<div class="pnl-box"><span>Invites</span><b id="inviteCount">0</b></div><div class="pnl-box"><span>Earned</span><b id="inviteEarned">$0</b></div>
-<button class="kycbtn" style="background:#7b61ff" onclick="simulateInvite()">+ Simulate Friend Joined</button><button class="kycbtn" style="background:#444;color:#fff" onclick="closeInvite()">Close</button></div></div>
-<div id="app"><h1>FBS FX <span id="liveBadge" style="font-size:12px;color:#ffaa00">● SIMULATED</span></h1>
-<div class="acct"><button id="btnDemo" class="activeDemo" onclick="switchAccount('demo')">DEMO</button><button id="btnReal" onclick="switchAccount('real')">REAL</button></div>
-<div class="card"><b><span id="acctLabel">Demo</span> Balance: $<span id="bal">10000.00</span></b><br><span class="small" id="pnl">Floating: $0</span><br><span class="small" id="todayPnl">Today: $0</span><br><span class="small">KYC: <span id="kycBadge" class="badge badge-not">NOT VERIFIED</span> <span id="kycShort"></span></span><br><span class="small">M-Pesa Till: <b style="color:#00d084">6636264</b></span>
-<div class="row" style="margin-top:12px"><button class="depbtn" onclick="openMoney('deposit')">Deposit</button><button class="withbtn" onclick="openMoney('withdraw')">Withdraw</button></div>
-<button class="kycbtn" onclick="openKYC()">Verify KYC</button><button class="invitebtn" onclick="openInvite()">Invite - Earn $5</button><button class="kycbtn" style="background:#ff3b3b;color:#fff" onclick="resetDemo()">Reset Demo</button></div>
-<div id="list"></div>
-<div class="card"><div class="tab"><button id="tabOpen" class="active" onclick="showTab('open')">Open Trades</button><button id="tabHist" onclick="showTab('hist')">History</button><button id="tabTrans" onclick="showTab('trans')">Money</button></div><div id="trades">No open trades</div></div></div>
+
+<div class="top"><button class="demo">DEMO</button><button class="real">REAL</button></div>
+
+<div class="card">
+<b style="font-size:19px">Real Balance: $<span id="bal">794.00</span></b><br>
+<span style="color:#aaa">Floating: $0.00<br>Today: $0.00 | Closed: 0<br>
+KYC: <span style="background:#ff444f;padding:2px 8px;border-radius:6px;font-size:12px">NOT VERIFIED</span><br>
+Payments: <span style="color:#00ff88">M-Pesa • Bank • Crypto</span></span>
+</div>
+
+<button class="btn green" onclick="openModal('dep')">Deposit</button>
+<button class="btn orange" onclick="openModal('wd')">Withdraw</button>
+<button class="btn white" onclick="alert('KYC - Upload ID + Selfie')">Verify KYC</button>
+<button class="btn purple" onclick="alert('Your link: https://fbsfx.netlify.app/?ref=YOURID - Earn $5 per invite')">Invite - Earn $5</button>
+<button class="btn red" onclick="alert('Demo Reset')">Reset Demo</button>
+
+<div class="pair"><b>EUR/USD - $1.0996 <span style="color:#ff444f">▼ -0.02%</span></b><br><small style="color:#aaa">Tap to open ></small></div>
+<div class="pair"><b>GBP/USD - $1.3196 <span style="color:#ff444f">▼ -0.03%</span></b><br><small style="color:#aaa">Tap to open ></small></div>
+<div class="pair"><b>USD/JPY - $159.41 <span style="color:#00ff88">▲ +0.01%</span></b></div>
+
+<!-- DEPOSIT MODAL -->
+<div id="dep" class="modal"><div class="box">
+<h2>Deposit</h2>
+<div class="tabs">
+<button id="d-mpesa" class="active" onclick="setPay('dep','mpesa')">M-Pesa</button>
+<button id="d-bank" onclick="setPay('dep','bank')">Bank</button>
+<button id="d-crypto" onclick="setPay('dep','crypto')">Crypto</button>
+</div>
+
+<!-- M-PESA DEPOSIT -->
+<div id="dep-mpesa">
+<div class="paybox">Send to: <b>0722 XXX XXX</b> <span style="color:#00ff88">M-Pesa Send Money</span><br><small>Name: Clinton Kerama • Use your FBS username as reference</small><br>
+<label>Amount (KES)</label><input id="dMpesaAmt" type="number" placeholder="e.g 1000">
+<label>M-Pesa Code (e.g QK...)</label><input id="dMpesaCode" placeholder="Enter M-Pesa Code">
+<label>Your M-Pesa Phone</label><input id="dMpesaPhone" placeholder="07XX XXX XXX">
+<button class="btn green" onclick="submitDep('M-Pesa')">I Have Sent - Confirm Deposit</button>
+</div></div>
+
+<!-- BANK DEPOSIT -->
+<div id="dep-bank" style="display:none">
+<div class="paybox">Bank: <b>Equity Bank</b><br>Account Name: <b>Clinton Kerama</b><br>Account No: <b>YOUR ACCOUNT NO</b> <button class="copy" onclick="copyTxt('YOUR ACCOUNT NO')">Copy</button><br>Branch: <b>YOUR BRANCH</b><br><small>Change this to your real bank in code</small><br>
+<label>Amount (KES)</label><input id="dBankAmt" type="number" placeholder="e.g 5000">
+<label>Bank Reference / Slip No</label><input id="dBankRef" placeholder="Enter Ref">
+<button class="btn green" onclick="submitDep('Bank')">I Have Sent - Confirm Deposit</button>
+</div></div>
+
+<!-- CRYPTO DEPOSIT -->
+<div id="dep-crypto" style="display:none">
+<div class="paybox">
+<label>Select Coin</label><select id="dCryptoCoin" onchange="showCryptoAddr('dep')">
+<option value="USDT TRC20">USDT - TRC20 (Tron) - Low Fee</option>
+<option value="USDT BEP20">USDT - BEP20 (BSC)</option>
+<option value="BTC">BTC - Bitcoin</option>
+<option value="ETH">ETH - Ethereum</option></select>
+<div id="depCryptoAddr">Wallet: <b>TXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</b> <button class="copy" onclick="copyTxt('TXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')">Copy</button><br><small>Replace with YOUR real wallet address</small></div>
+<label>Amount (USD)</label><input id="dCryptoAmt" type="number" placeholder="e.g 50">
+<label>TxID / Hash</label><input id="dCryptoHash" placeholder="Paste TxID">
+<button class="btn green" onclick="submitDep('Crypto')">I Have Sent - Confirm Deposit</button>
+</div></div>
+<button class="btn white" onclick="closeModal('dep')">Close</button>
+</div></div>
+
+<!-- WITHDRAW MODAL -->
+<div id="wd" class="modal"><div class="box">
+<h2>Withdraw</h2>
+<div class="tabs">
+<button id="w-mpesa" class="active" onclick="setPay('wd','mpesa')">M-Pesa</button>
+<button id="w-bank" onclick="setPay('wd','bank')">Bank</button>
+<button id="w-crypto" onclick="setPay('wd','crypto')">Crypto</button>
+</div>
+
+<div id="wd-mpesa">
+<label>Amount (USD)</label><input id="wMpesaAmt" type="number" placeholder="e.g 20">
+<label>Your M-Pesa Number</label><input id="wMpesaPhone" placeholder="07XX XXX XXX">
+<label>Your Full Name (M-Pesa Name)</label><input id="wMpesaName" placeholder="As on ID">
+<button class="btn orange" onclick="submitWd('M-Pesa')">Request M-Pesa Withdrawal</button>
+<small style="color:#aaa">Fee: 0% • Min $5 • Processed in 5-30 mins • Rate: 1 USD = 130 KES</small>
+</div>
+
+<div id="wd-bank" style="display:none">
+<label>Amount (USD)</label><input id="wBankAmt" type="number" placeholder="e.g 100">
+<label>Bank Name</label><input id="wBankName" placeholder="Equity / KCB / Co-op">
+<label>Account Name</label><input id="wBankAccName" placeholder="As on Bank">
+<label>Account Number</label><input id="wBankAccNo" placeholder="Account No">
+<label>Branch</label><input id="wBankBranch" placeholder="Branch">
+<button class="btn orange" onclick="submitWd('Bank')">Request Bank Withdrawal</button>
+<small style="color:#aaa">Fee: $2 • Min $50 • 1-2 Working Days</small>
+</div>
+
+<div id="wd-crypto" style="display:none">
+<label>Select Coin</label><select id="wCryptoCoin"><option>USDT TRC20</option><option>USDT BEP20</option><option>BTC</option><option>ETH</option></select>
+<label>Amount (USD)</label><input id="wCryptoAmt" type="number" placeholder="e.g 50">
+<label>Your Wallet Address</label><input id="wCryptoAddr" placeholder="Paste your USDT / BTC address">
+<button class="btn orange" onclick="submitWd('Crypto')">Request Crypto Withdrawal</button>
+<small style="color:#aaa">Fee: $1 • Min $10 • 10-30 mins after approval</small>
+</div>
+<button class="btn white" onclick="closeModal('wd')">Close</button>
+</div></div>
+
 <script>
-function loadLS(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function saveLS(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-var assets=[{n:'EUR/USD',p:1.0850,o:1.0850,c:[]},{n:'GBP/USD',p:1.27,o:1.27,c:[]},{n:'USD/JPY',p:151.2,o:151.2,c:[]},{n:'GOLD',p:2350,o:2350,c:[]},{n:'BTC/USD',p:65000,o:65000,c:[]},{n:'USD/KES',p:130.5,o:130.5,c:[]}];
-var selected=null,balances=loadLS('fbs_bal',{demo:10000,real:794}),accountMode=loadLS('fbs_mode','demo'),trades=loadLS('fbs_trades',[]),closedTrades=loadLS('fbs_closed',[]),moneyTxns=loadLS('fbs_txns',[]),lot=0.01,timeframe='1M',tickCount=0,currentTab='open',moneyType='deposit',chartType=loadLS('fbs_ct','candles'),visibleCandles=loadLS('fbs_zoom',30),isLive=false;
-if(balances.real===0){balances.real=794;saveLS('fbs_bal',balances)}
-var kyc=loadLS('fbs_kyc',{phone:'',phoneVerified:false,idFront:false,idBack:false,status:'NOT_VERIFIED'});
-var refCode=loadLS('fbs_ref',null);if(!refCode){refCode='FBS'+Math.floor(1000+Math.random()*9000);saveLS('fbs_ref',refCode)}
-var invites=loadLS('fbs_inv',0),inviteEarned=loadLS('fbs_invE',0);
-for(var ai=0;ai<assets.length;ai++){var a=assets[ai],p=a.p;for(var i=0;i<40;i++){var o=p,vol=Math.abs(p)*0.0012,c=o+(Math.random()-0.48)*vol*2,h=Math.max(o,c)+Math.random()*vol*.6,l=Math.min(o,c)-Math.random()*vol*.6;a.c.push({o:o,h:h,l:l,c:c});p=c}a.p=p;a.o=a.c[0].o}
-function saveAll(){saveLS('fbs_bal',balances);saveLS('fbs_mode',accountMode);saveLS('fbs_trades',trades);saveLS('fbs_closed',closedTrades);saveLS('fbs_txns',moneyTxns);saveLS('fbs_kyc',kyc);saveLS('fbs_inv',invites);saveLS('fbs_invE',inviteEarned);saveLS('fbs_ct',chartType);saveLS('fbs_zoom',visibleCandles)}
-function getBalance(){return balances[accountMode]}function setBalance(v){balances[accountMode]=v;saveAll()}
-function getAsset(n){for(var i=0;i<assets.length;i++)if(assets[i].n===n)return assets[i];return null}
-function mult(n){if(n==='GOLD')return 1;if(n==='BTC/USD')return .1;if(n==='USD/KES')return .5;if(n.indexOf('JPY')>=0)return 10;return 100}
-function fmt(n,p){if(n==='BTC/USD')return p.toFixed(0);if(n==='USD/KES'||n==='USD/JPY'||n==='GOLD')return p.toFixed(2);return p.toFixed(4)}
-function calcProfit(t){var a=getAsset(t.n);var d=t.type==='BUY'?a.p-t.entry:t.entry-a.p;return d*mult(t.n)*t.lot*100}
-function totalPnl(){var s=0;for(var i=0;i<trades.length;i++)s+=calcProfit(trades[i]);return s}
-function pairPnl(n){var s=0;for(var i=0;i<trades.length;i++)if(trades[i].n===n)s+=calcProfit(trades[i]);return s}
-function todayProfit(){var s=0;for(var i=0;i<closedTrades.length;i++)s+=closedTrades[i].profit;return s}function updateKYCUI(){var b=document.getElementById('kycBadge');if(!b)return;if(kyc.status==='VERIFIED'){b.className='badge badge-verified';b.innerText='VERIFIED';document.getElementById('kycShort').innerText=kyc.phone}else if(kyc.status==='PENDING'){b.className='badge badge-pending';b.innerText='PENDING'}else{b.className='badge badge-not';b.innerText='NOT VERIFIED'}var ps=document.getElementById('phoneStatus');if(ps)ps.innerText=kyc.phoneVerified?'Phone VERIFIED '+kyc.phone:'Phone: Not Verified'}
-function switchAccount(m){accountMode=m;saveAll();var d=document.getElementById('btnDemo'),r=document.getElementById('btnReal');if(d)d.className=m==='demo'?'activeDemo':'';if(r)r.className=m==='real'?'activeReal':'';document.getElementById('acctLabel').innerText=m==='demo'?'Demo':'Real';if(selected)openDetail(selected);else renderList()}
-function resetDemo(){if(confirm('Reset DEMO to $10000?')){balances.demo=10000;saveAll();renderList()}}
-var liveFixed=false;
-async function fetchLive(){try{var res=await fetch('https://open.er-api.com/v6/latest/USD');var data=await res.json();if(!data||!data.rates)throw 0;var r=data.rates;function setP(n,v){var a=getAsset(n);if(!a||!v)return;var diff=Math.abs(v-a.p)/a.p;if(!liveFixed||diff>0.003){a.p=v;a.o=v;a.c=[];for(var i=0;i<40;i++){var base=v*(1+(i-40)*0.0002);var o=base+(Math.random()-0.5)*v*0.0008;var c=o+(Math.random()-0.5)*v*0.0008;var h=Math.max(o,c)+Math.random()*v*0.0004;var l=Math.min(o,c)-Math.random()*v*0.0004;a.c.push({o:o,h:h,l:l,c:c})}a.c[a.c.length-1].c=v;a.c[a.c.length-1].h=Math.max(a.c[a.c.length-1].h,v);a.c[a.c.length-1].l=Math.min(a.c[a.c.length-1].l,v);return} a.p=v;var l=a.c[a.c.length-1];l.c=v;if(v>l.h)l.h=v;if(v<l.l)l.l=v}if(r.EUR)setP('EUR/USD',1/r.EUR);if(r.GBP)setP('GBP/USD',1/r.GBP);if(r.JPY)setP('USD/JPY',r.JPY);if(r.KES)setP('USD/KES',r.KES);try{var b=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');var bj=await b.json();if(bj.price)setP('BTC/USD',parseFloat(bj.price))}catch(e){}try{var g=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT');var gj=await g.json();if(gj.price)setP('GOLD',parseFloat(gj.price))}catch(e){}liveFixed=true;isLive=true;var lb=document.getElementById('liveBadge');if(lb){lb.innerText='● LIVE';lb.style.color='#00d084'}if(selected)openDetail(selected);else renderList()}catch(e){isLive=false}}
-fetchLive();setInterval(fetchLive,15000);
-function setChartType(t){chartType=t;saveAll();if(selected)openDetail(selected)}
-function zoomChart(d){visibleCandles=Math.max(10,Math.min(60,visibleCandles+d));saveAll();if(selected)openDetail(selected)}
-function drawCandles(id,candles,showPrice){var cv=document.getElementById(id);if(!cv||!candles.length)return;var show=candles.slice(-visibleCandles);if(id.indexOf('mini')===0)show=candles.slice(-22);var dpr=window.devicePixelRatio||1;var w=cv.clientWidth||340,h=cv.clientHeight||(id.indexOf('mini')===0?60:280);if(cv.width!==w*dpr){cv.width=w*dpr;cv.height=h*dpr}var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);var padR=showPrice?52:4,padL=4,padT=8,padB=6,chartW=w-padL-padR,chartH=h-padT-padB;var mn=1e18,mx=-1e18;for(var i=0;i<show.length;i++){if(show[i].l<mn)mn=show[i].l;if(show[i].h>mx)mx=show[i].h}var rg=(mx-mn)||1;mn-=rg*.08;mx+=rg*.08;rg=mx-mn;function y(v){return padT+(1-(v-mn)/rg)*chartH}ctx.strokeStyle='rgba(255,255,255,.06)';ctx.fillStyle='#888';ctx.font='10px Arial';ctx.lineWidth=1;for(var g=0;g<4;g++){var gy=padT+(g/3)*chartH;ctx.beginPath();ctx.moveTo(padL,gy);ctx.lineTo(padL+chartW,gy);ctx.stroke();if(showPrice){var pv=mx-(g/3)*rg;ctx.fillText(pv.toFixed(4),padL+chartW+4,gy+3)}}if(chartType!=='candles'&&showPrice){ctx.beginPath();ctx.moveTo(padL,y(show[0].c));for(var li=1;li<show.length;li++){ctx.lineTo(padL+(li/(show.length-1))*chartW,y(show[li].c))}if(chartType==='area'){ctx.lineTo(padL+chartW,padT+chartH);ctx.lineTo(padL,padT+chartH);ctx.closePath();ctx.fillStyle='rgba(0,208,132,.15)';ctx.fill();ctx.beginPath();ctx.moveTo(padL,y(show[0].c));for(var l2=1;l2<show.length;l2++){ctx.lineTo(padL+(l2/(show.length-1))*chartW,y(show[l2].c))}}ctx.strokeStyle='#00d084';ctx.lineWidth=2;ctx.stroke()}else{var step=chartW/show.length,bodyW=Math.max(3,step*.65);for(var j=0;j<show.length;j++){var k=show[j],x=padL+j*step+step/2,up=k.c>=k.o,col=up?'#26a69a':'#ef5350';ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y(k.h));ctx.lineTo(x,y(k.l));ctx.stroke();var top=Math.min(y(k.o),y(k.c)),bh=Math.max(1.5,Math.abs(y(k.c)-y(k.o)));ctx.fillStyle=col;ctx.fillRect(x-bodyW/2,top,bodyW,bh)}}if(showPrice){var last=show[show.length-1].c,ly=y(last),lc=last>=show[show.length-1].o?'#26a69a':'#ef5350';ctx.strokeStyle=lc;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(padL,ly);ctx.lineTo(padL+chartW,ly);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=lc;ctx.fillRect(padL+chartW,ly-9,padR,18);ctx.fillStyle='#000';ctx.font='bold 10px Arial';ctx.fillText(last.toFixed(4),padL+chartW+4,ly+3)}}
-function tradeRow(t,i){var p=calcProfit(t),col=p>=0?'#00d084':'#ff3b3b';var ex='';if(t.tp)ex+='<br><span class="small">TP $'+fmt(t.n,t.tp)+'</span>';if(t.sl)ex+='<br><span class="small">SL $'+fmt(t.n,t.sl)+'</span>';return '<div class="trade"><div><b>'+t.type+' '+t.n+' '+t.lot+' lot</b><br><span class="small">@ $'+fmt(t.n,t.entry)+' <span style="color:'+col+'">'+(p>=0?'+':'')+'$'+p.toFixed(2)+'</span></span>'+ex+'</div><button class="closebtn" onclick="closeTrade('+i+')">Close</button></div>'}
-function histRow(h){var col=h.profit>=0?'#00d084':'#ff3b3b';var b=h.reason==='TP'?'<span class="badge badge-tp">TP</span>':h.reason==='SL'?'<span class="badge badge-sl">SL</span>':'<span class="badge badge-manual">MANUAL</span>';return '<div class="hist"><b>'+h.type+' '+h.n+' '+h.lot+'</b> '+b+'<br><span class="small">['+h.account+'] $'+fmt(h.n,h.entry)+' -> $'+fmt(h.n,h.exit)+' <b style="color:'+col+'">'+(h.profit>=0?'+':'')+'$'+h.profit.toFixed(2)+'</b></span></div>'}
-function txnRow(tx){var isDep=tx.type==='deposit';var b=isDep?'<span class="badge badge-dep">DEPOSIT</span>':'<span class="badge badge-with">WITHDRAW</span>';var ex=tx.code?' Code: '+tx.code:'';return '<div class="hist"><b>'+(isDep?'Deposit':'Withdraw')+' $'+tx.amount.toFixed(2)+'</b> '+b+'<br><span class="small">['+tx.account+'] '+tx.method+ex+' After $'+tx.after.toFixed(2)+'</span></div>'}
-function renderTradesArea(){var te=document.getElementById('trades');if(!te)return;if(currentTab==='open'){if(!trades.length)te.innerHTML='No open trades';else{var h='';for(var i=0;i<trades.length;i++)h+=tradeRow(trades[i],i);te.innerHTML=h}}else if(currentTab==='hist'){if(!closedTrades.length)te.innerHTML='No history';else{var h2='';for(var j=closedTrades.length-1;j>=0;j--)h2+=histRow(closedTrades[j]);te.innerHTML=h2}}else{if(!moneyTxns.length)te.innerHTML='No money yet';else{var h3='';for(var k=moneyTxns.length-1;k>=0;k--)h3+=txnRow(moneyTxns[k]);te.innerHTML=h3}}}
-function showTab(t){currentTab=t;document.getElementById('tabOpen').className=t==='open'?'active':'';document.getElementById('tabHist').className=t==='hist'?'active':'';document.getElementById('tabTrans').className=t==='trans'?'active':'';if(selected)openDetail(selected);else renderTradesArea()}
-function renderList(){var list=document.getElementById('list');var html='';for(var j=0;j<assets.length;j++){var a=assets[j];var pc=((a.p-a.o)/a.o*100);html+='<div class="card" onclick="openDetail(\''+a.n+'\')"><b>'+a.n+'</b> - $'+fmt(a.n,a.p)+' <span class="small" style="color:'+(pc>=0?'#26a69a':'#ef5350')+'">'+(pc>=0?'▲ +':'▼ ')+pc.toFixed(2)+'%</span><canvas class="miniCanvas" id="mini'+j+'" width="340" height="60"></canvas><div class="small">Tap to open ></div></div>'}list.innerHTML=html;for(var k=0;k<assets.length;k++)drawCandles('mini'+k,assets[k].c,false);document.getElementById('bal').innerText=getBalance().toFixed(2);document.getElementById('pnl').innerText='Floating: $'+totalPnl().toFixed(2);document.getElementById('todayPnl').innerText='Today: $'+todayProfit().toFixed(2)+' | Closed: '+closedTrades.length;document.getElementById('btnDemo').className=accountMode==='demo'?'activeDemo':'';document.getElementById('btnReal').className=accountMode==='real'?'activeReal':'';document.getElementById('acctLabel').innerText=accountMode==='demo'?'Demo':'Real';var lb=document.getElementById('liveBadge');if(lb){lb.innerText=isLive?'● LIVE':'● SIMULATED';lb.style.color=isLive?'#00d084':'#ffaa00'}updateKYCUI();renderTradesArea()}
-function copyTill(){if(navigator.clipboard)navigator.clipboard.writeText('6636264').then(function(){alert('Till Copied: 6636264')});else alert('Till: 6636264')}
-function onMethodChange(){var m=document.getElementById('moneyMethod').value;document.getElementById('mpesaSection').style.display=m==='M-Pesa Till'?'block':'none'}
-function openMoney(t){moneyType=t;if(t==='withdraw'&&accountMode==='real'&&kyc.status!=='VERIFIED'){alert('KYC REQUIRED for Real Withdrawal');openKYC();return}document.getElementById('modal').className='modal show';document.getElementById('modalTitle').innerText=(t==='deposit'?'Deposit - ':'Withdraw - ')+(accountMode==='demo'?'DEMO':'REAL');document.getElementById('modalNote').innerText=t==='deposit'?'Deposit via Till 6636264':'Balance $'+getBalance().toFixed(2);document.getElementById('modalConfirm').innerText=t==='deposit'?'Deposit':'Withdraw';onMethodChange()}
-function closeModal(){document.getElementById('modal').className='modal'}
-function setAmt(v){document.getElementById('moneyAmt').value=v}
-function confirmMoney(){var amt=parseFloat(document.getElementById('moneyAmt').value);var method=document.getElementById('moneyMethod').value;var code=(document.getElementById('mpesaCode').value||'').toUpperCase().trim();var phone=document.getElementById('mpesaPhone').value||'';if(!amt||amt<=0){alert('Enter amount');return}if(moneyType==='withdraw'&&amt>getBalance()){alert('Not enough! You have $'+getBalance().toFixed(2));return}if(method==='M-Pesa Till'&&moneyType==='deposit'){if(!code||code.length<8||code[0]!=='Q'){alert('Enter valid M-Pesa Code e.g. QK12345678 from SMS after sending to Till 6636264');return}for(var i=0;i<moneyTxns.length;i++){if(moneyTxns[i].code===code){alert('This Code already used!');return}}}if(moneyType==='deposit'){setBalance(getBalance()+amt);moneyTxns.push({type:'deposit',amount:amt,method:method,after:getBalance(),account:accountMode,code:code});saveAll();alert('Deposited $'+amt+' via Till 6636264 Code: '+code)}else{setBalance(getBalance()-amt);moneyTxns.push({type:'withdraw',amount:amt,method:method,after:getBalance(),account:accountMode,code:''});saveAll();alert('Withdraw $'+amt+' to '+phone)}closeModal();if(selected)openDetail(selected);else renderList()}
-function openKYC(){document.getElementById('kycModal').className='modal show';updateKYCUI()}
-function closeKYC(){document.getElementById('kycModal').className='modal'}
-function sendOTP(){var ph=document.getElementById('kycPhone').value;if(!ph||ph.length<10){alert('Enter phone');return}kyc.phone=ph;saveAll();document.getElementById('otpBox').style.display='block';alert('OTP sent. DEMO CODE: 123456')}
-function verifyOTP(){if(document.getElementById('otpInput').value==='123456'){kyc.phoneVerified=true;saveAll();updateKYCUI();alert('Phone Verified')}else alert('Wrong. Code is 123456')}
-function uploadID(input,side){var f=input.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){var img=document.getElementById(side==='front'?'frontImg':'backImg');img.src=e.target.result;img.style.display='block';document.getElementById(side==='front'?'frontLabel':'backLabel').innerText='Uploaded';if(side==='front')kyc.idFront=true;else kyc.idBack=true;saveAll()};r.readAsDataURL(f)}
-function submitKYC(){if(!kyc.phoneVerified){alert('Verify phone first');return}if(!kyc.idFront){alert('Upload ID FRONT');return}if(!kyc.idBack){alert('Upload ID BACK');return}kyc.status='PENDING';saveAll();updateKYCUI();setTimeout(function(){kyc.status='VERIFIED';saveAll();updateKYCUI();alert('KYC VERIFIED!');closeKYC();if(selected)openDetail(selected);else renderList()},3000)}
-function getRefLink(){return window.location.origin+window.location.pathname+'?ref='+refCode}
-function openInvite(){document.getElementById('inviteModal').className='modal show';document.getElementById('refLink').innerText=getRefLink();document.getElementById('inviteCount').innerText=invites;document.getElementById('inviteEarned').innerText='$'+inviteEarned.toFixed(2);document.getElementById('waShare').href='https://wa.me/?text='+encodeURIComponent('Join FBS FX Till 6636264: '+getRefLink())}
-function closeInvite(){document.getElementById('inviteModal').className='modal'}
-function copyLink(){var l=getRefLink();if(navigator.clipboard)navigator.clipboard.writeText(l).then(function(){alert('Link Copied')});else alert(l)}
-function simulateInvite(){invites++;inviteEarned+=5;setBalance(getBalance()+5);moneyTxns.push({type:'deposit',amount:5,method:'Invite Bonus',after:getBalance(),account:accountMode,code:''});saveAll();alert('Friend joined +$5');if(selected)openDetail(selected);else renderList()}
-function tfBar(){var h='<div class="tf">';var tfs=['1M','5M','15M','1H','1D'];for(var i=0;i<tfs.length;i++){h+='<button class="'+(tfs[i]===timeframe?'active':'')+'" onclick="setTF(\''+tfs[i]+'\')">'+tfs[i]+'</button>'}return h+'</div>'}
-function toolBar(){return '<div class="tool"><button class="'+(chartType==='candles'?'active':'')+'" onclick="setChartType(\'candles\')">Candles</button><button class="'+(chartType==='line'?'active':'')+'" onclick="setChartType(\'line\')">Line</button><button class="'+(chartType==='area'?'active':'')+'" onclick="setChartType(\'area\')">Area</button><button onclick="zoomChart(-5)">Zoom -</button><button onclick="zoomChart(5)">Zoom +</button></div>'}
-function openDetail(name){selected=name;var a=getAsset(name);var ch=((a.p-a.o)/a.o*100).toFixed(2),cls=ch>=0?'up':'down',pp=pairPnl(name),pcol=pp>=0?'#00d084':'#ff3b3b';var html='<button class="back" onclick="back()">Back</button><h1 style="margin-top:12px">'+name+' - '+accountMode.toUpperCase()+'</h1><div class="card"><div style="display:flex;justify-content:space-between"><div><div class="big">$'+fmt(name,a.p)+'</div><div class="'+cls+'">'+ch+'% today</div><div class="small" style="color:'+(isLive?'#00d084':'#ffaa00')+'">'+(isLive?'● LIVE':'● SIMULATED')+'</div></div><div style="text-align:right"><div class="small">Balance</div><b>$'+getBalance().toFixed(2)+'</b><div class="small">P/L '+name+'</div><b style="color:'+pcol+'">'+(pp>=0?'+':'')+'$'+pp.toFixed(2)+'</b></div></div>'+tfBar()+toolBar()+'<div class="chartWrap"><canvas class="bigCanvas" id="bigchart" width="340" height="280"></canvas><div class="legend"><span>O '+fmt(name,a.c[a.c.length-1].o)+' H '+fmt(name,a.c[a.c.length-1].h)+' L '+fmt(name,a.c[a.c.length-1].l)+' C '+fmt(name,a.c[a.c.length-1].c)+'</span><span>'+timeframe+' '+visibleCandles+' candles</span></div></div><div class="pnl-box"><span>Total Floating</span><b style="color:'+(totalPnl()>=0?'#00d084':'#ff3b3b')+'">'+(totalPnl()>=0?'+':'')+'$'+totalPnl().toFixed(2)+'</b></div><div class="row" style="margin-top:12px"><button class="depbtn" onclick="openMoney(\'deposit\')">Deposit</button><button class="withbtn" onclick="openMoney(\'withdraw\')">Withdraw</button></div><div class="small" style="text-align:center;margin-top:6px">M-Pesa Till: <b style="color:#00d084">6636264</b></div><button class="kycbtn" onclick="openKYC()">Verify KYC</button><button class="invitebtn" onclick="openInvite()">Invite - Earn $5</button></div><div class="card"><b>Lot Size</b><input type="number" id="lotIn" value="'+lot+'" step="0.01" onchange="lot=parseFloat(this.value)"><div class="row"><div style="flex:1"><label>Take Profit</label><input type="number" id="tpIn" placeholder="'+fmt(name,a.p*1.01)+'"></div><div style="flex:1"><label>Stop Loss</label><input type="number" id="slIn" placeholder="'+fmt(name,a.p*0.99)+'"></div></div><div class="small">BUY: TP ABOVE, SL BELOW<br>SELL: TP BELOW, SL ABOVE</div></div><div class="row"><button class="buy" onclick="openTrade(\'BUY\')">BUY<br><span style="font-size:12px">$'+fmt(name,a.p)+'</span></button><button class="sell" onclick="openTrade(\'SELL\')">SELL<br><span style="font-size:12px">$'+fmt(name,a.p)+'</span></button></div><div class="card"><div class="tab"><button id="tabOpen" class="'+(currentTab==='open'?'active':'')+'" onclick="showTab(\'open\')">Open Trades</button><button id="tabHist" class="'+(currentTab==='hist'?'active':'')+'" onclick="showTab(\'hist\')">History</button><button id="tabTrans" class="'+(currentTab==='trans'?'active':'')+'" onclick="showTab(\'trans\')">Money</button></div><div id="trades"></div></div>';document.getElementById('app').innerHTML=html;requestAnimationFrame(function(){drawCandles('bigchart',a.c,true)});var te=document.getElementById('trades');if(currentTab==='open'){var th='',f=false;for(var ti=0;ti<trades.length;ti++)if(trades[ti].n===name){f=true;th+=tradeRow(trades[ti],ti)}te.innerHTML=f?th:'No trades on '+name}else if(currentTab==='hist'){var hh='',f2=false;for(var hj=closedTrades.length-1;hj>=0;hj--)if(closedTrades[hj].n===name){f2=true;hh+=histRow(closedTrades[hj])}te.innerHTML=f2?hh:'No history'}else{var mm='',f3=false;for(var mk=moneyTxns.length-1;mk>=0;mk--){f3=true;mm+=txnRow(moneyTxns[mk])}te.innerHTML=f3?mm:'No money yet'}updateKYCUI()}
-function setTF(t){timeframe=t;if(selected)openDetail(selected);else renderList()}
-function back(){selected=null;location.reload()}
-function openTrade(type){var a=getAsset(selected);var tp=document.getElementById('tpIn').value?parseFloat(document.getElementById('tpIn').value):null;var sl=document.getElementById('slIn').value?parseFloat(document.getElementById('slIn').value):null;if(tp&&((type==='BUY'&&tp<=a.p)||(type==='SELL'&&tp>=a.p))){alert('TP wrong side');return}if(sl&&((type==='BUY'&&sl>=a.p)||(type==='SELL'&&sl<=a.p))){alert('SL wrong side');return}trades.push({type:type,n:a.n,entry:a.p,lot:lot,tp:tp,sl:sl});saveAll();openDetail(a.n)}
-function doClose(i,reason){var t=trades[i],a=getAsset(t.n),prof=calcProfit(t);setBalance(getBalance()+prof);closedTrades.push({type:t.type,n:t.n,entry:t.entry,exit:a.p,lot:t.lot,profit:prof,reason:reason,account:accountMode});trades.splice(i,1);saveAll();if(selected)openDetail(selected);else renderList()}
-function closeTrade(i){doClose(i,'MANUAL')}
-function checkTPSL(){for(var i=trades.length-1;i>=0;i--){var t=trades[i],a=getAsset(t.n),p=a.p;if(t.tp&&((t.type==='BUY'&&p>=t.tp)||(t.type==='SELL'&&p<=t.tp))){doClose(i,'TP');continue}if(t.sl&&((t.type==='BUY'&&p<=t.sl)||(t.type==='SELL'&&p>=t.sl))){doClose(i,'SL')}}}
-setInterval(function(){tickCount++;for(var i=0;i<assets.length;i++){var a=assets[i];var st=Math.abs(a.p)*0.00008;if(a.n==='BTC/USD')st=Math.abs(a.p)*0.0003;if(a.n==='GOLD')st=Math.abs(a.p)*0.0002;a.p+=(Math.random()-0.5)*st*2;var last=a.c[a.c.length-1];last.c=a.p;if(a.p>last.h)last.h=a.p;if(a.p<last.l)last.l=a.p;if(tickCount%3===0){a.c.push({o:a.p,h:a.p,l:a.p,c:a.p});if(a.c.length>60)a.c.shift()}}checkTPSL();if(selected)openDetail(selected);else renderList()},1000);
-renderList();
+function openModal(id){document.getElementById(id).style.display='block'}
+function closeModal(id){document.getElementById(id).style.display='none'}
+function setPay(type,method){
+  ['mpesa','bank','crypto'].forEach(m=>{
+    document.getElementById(type+'-'+m).style.display = (m==method?'block':'none');
+    let btn=document.getElementById((type=='dep'?'d-':'w-')+m);
+    btn.classList.toggle('active', m==method);
+  });
+}
+function showCryptoAddr(type){
+  let coin=document.getElementById('dCryptoCoin').value;
+  let addr = coin.includes('TRC20') ? 'TXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' : coin.includes('BEP20') ? '0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' : coin=='BTC' ? 'bc1qXXXXXXXXXXXXXXXXXXXXXXXXXXX' : '0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+  document.getElementById('depCryptoAddr').innerHTML='Wallet: <b>'+addr+'</b> <button class="copy" onclick="copyTxt(\''+addr+'\')">Copy</button><br><small>Network: '+coin+'</small>';
+}
+function copyTxt(t){navigator.clipboard.writeText(t); alert('Copied: '+t)}
+function submitDep(m){
+  let amt = document.getElementById(m=='M-Pesa'?'dMpesaAmt':m=='Bank'?'dBankAmt':'dCryptoAmt').value;
+  if(!amt) return alert('Enter amount');
+  alert(m+' Deposit Request Sent!\nAmount: '+amt+'\nStatus: PENDING - Admin will confirm after checking payment.\nYou will get balance in 5-30 mins.');
+  closeModal('dep');
+  // TODO: Send to your WhatsApp / Google Sheet / Backend
+  let msg = encodeURIComponent('NEW DEPOSIT '+m+' Amount:'+amt+' User: Clinton');
+  window.open('https://wa.me/2547XXXXXXXX?text='+msg,'_blank');
+}
+function submitWd(m){
+  alert(m+' Withdrawal Request Sent!\nStatus: PENDING - Admin will send in 5-30 mins (Bank 1-2 days).\nCheck your '+m+' shortly.');
+  closeModal('wd');
+}
 </script></body></html>
