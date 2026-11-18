@@ -1,25 +1,25 @@
-<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>FBS FX - Deposit / Withdraw</title>
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>FBS FX</title>
 <style>
 body{font-family:Arial;background:#0a0f1e;color:#fff;padding:14px;margin:0}
 .top{display:flex;gap:8px}.top button{flex:1;padding:12px;border:0;border-radius:10px;font-weight:bold}.demo{background:#2a3350;color:#fff}.real{background:#ffaa00}
 .card{background:#141b32;padding:14px;border-radius:14px;margin:12px 0}
 .btn{width:100%;padding:14px;border:0;border-radius:10px;font-weight:bold;margin:6px 0;font-size:16px;cursor:pointer}
-.green{background:#00d084}.orange{background:#ffaa00}.white{background:#fff}.purple{background:#7c5cff;color:#fff}.red{background:#ff444f;color:#fff}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:99;overflow:auto}
-.box{background:#141b32;margin:20px auto;padding:18px;border-radius:16px;max-width:480px}
-input,select,textarea{width:100%;padding:12px;border-radius:8px;border:0;background:#1e2745;color:#fff;margin:6px 0;box-sizing:border-box}
-label{font-size:13px;color:#aaa}
+.green{background:#00d084}.orange{background:#ffaa00}.white{background:#fff}.purple{background:#7c5cff;color:#fff}.red{background:#ff444f;color:#fff}.blue{background:#0088ff;color:#fff}
+.pair{background:#141b32;padding:14px;border-radius:12px;margin:10px 0;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99;overflow:auto}
+.box{background:#141b32;margin:10px auto;padding:18px;border-radius:16px;max-width:480px}
+input,select{width:100%;padding:12px;border-radius:8px;border:0;background:#1e2745;color:#fff;margin:6px 0;box-sizing:border-box}
 .tabs{display:flex;gap:6px}.tabs button{flex:1;padding:10px;border:0;border-radius:8px;background:#2a3350;color:#fff;font-weight:bold}.tabs button.active{background:#00d084;color:#000}
 .paybox{background:#0f1730;border:1px dashed #2a3350;padding:12px;border-radius:10px;margin:8px 0}
-.copy{font-size:12px;background:#2a3350;padding:6px 10px;border-radius:6px;float:right}
-.pair{background:#141b32;padding:14px;border-radius:12px;margin:10px 0}
+canvas{width:100%;height:180px;background:#0f1730;border-radius:10px}
+.tradeBtns{display:flex;gap:8px}.tradeBtns button{flex:1;padding:16px;border:0;border-radius:12px;font-weight:bold;font-size:17px}
 </style></head><body>
 
-<div class="top"><button class="demo">DEMO</button><button class="real">REAL</button></div>
+<div class="top"><button class="demo" onclick="setMode('DEMO')">DEMO</button><button class="real" onclick="setMode('REAL')">REAL</button></div>
 
 <div class="card">
-<b style="font-size:19px">Real Balance: $<span id="bal">794.00</span></b><br>
-<span style="color:#aaa">Floating: $0.00<br>Today: $0.00 | Closed: 0<br>
+<b style="font-size:19px"><span id="modeTxt">Real</span> Balance: $<span id="bal">794.00</span></b><br>
+<span style="color:#aaa">Floating: $<span id="float">0.00</span><br>Today: $<span id="today">0.00</span> | Closed: <span id="closed">0</span><br>
 KYC: <span style="background:#ff444f;padding:2px 8px;border-radius:6px;font-size:12px">NOT VERIFIED</span><br>
 Payments: <span style="color:#00ff88">M-Pesa • Bank • Crypto</span></span>
 </div>
@@ -27,119 +27,119 @@ Payments: <span style="color:#00ff88">M-Pesa • Bank • Crypto</span></span>
 <button class="btn green" onclick="openModal('dep')">Deposit</button>
 <button class="btn orange" onclick="openModal('wd')">Withdraw</button>
 <button class="btn white" onclick="alert('KYC - Upload ID + Selfie')">Verify KYC</button>
-<button class="btn purple" onclick="alert('Your link: https://fbsfx.netlify.app/?ref=YOURID - Earn $5 per invite')">Invite - Earn $5</button>
-<button class="btn red" onclick="alert('Demo Reset')">Reset Demo</button>
+<button class="btn purple" onclick="alert('Your link: https://fbsfx.netlify.app/?ref=YOURID - Earn $5')">Invite - Earn $5</button>
+<button class="btn red" onclick="resetDemo()">Reset Demo</button>
 
-<div class="pair"><b>EUR/USD - $1.0996 <span style="color:#ff444f">▼ -0.02%</span></b><br><small style="color:#aaa">Tap to open ></small></div>
-<div class="pair"><b>GBP/USD - $1.3196 <span style="color:#ff444f">▼ -0.03%</span></b><br><small style="color:#aaa">Tap to open ></small></div>
-<div class="pair"><b>USD/JPY - $159.41 <span style="color:#00ff88">▲ +0.01%</span></b></div>
+<div id="pairs"></div>
 
-<!-- DEPOSIT MODAL -->
-<div id="dep" class="modal"><div class="box">
-<h2>Deposit</h2>
-<div class="tabs">
-<button id="d-mpesa" class="active" onclick="setPay('dep','mpesa')">M-Pesa</button>
-<button id="d-bank" onclick="setPay('dep','bank')">Bank</button>
-<button id="d-crypto" onclick="setPay('dep','crypto')">Crypto</button>
+<!-- TRADE MODAL - THIS WAS MISSING -->
+<div id="trade" class="modal"><div class="box">
+<button onclick="closeModal('trade')" style="float:right;background:#2a3350;color:#fff;border:0;padding:8px 12px;border-radius:8px">✕ Close</button>
+<h2 id="tradePair">EUR/USD</h2>
+<div style="font-size:32px;font-weight:bold" id="tradePrice">$1.0996</div>
+<div id="tradeChange" style="color:#ff444f">▼ -0.02%</div>
+<canvas id="chart" width="400" height="180"></canvas>
+<p style="color:#aaa;font-size:13px">Live chart - updates every second. Trade expires in 60 seconds.</p>
+
+<label>Stake ($)</label>
+<div style="display:flex;gap:6px"><button onclick="setStake(1)" style="flex:1;padding:10px;background:#2a3350;color:#fff;border:0;border-radius:8px">$1</button><button onclick="setStake(5)" style="flex:1;padding:10px;background:#2a3350;color:#fff;border:0;border-radius:8px">$5</button><button onclick="setStake(10)" style="flex:1;padding:10px;background:#2a3350;color:#fff;border:0;border-radius:8px">$10</button><button onclick="setStake(20)" style="flex:1;padding:10px;background:#2a3350;color:#fff;border:0;border-radius:8px">$20</button></div>
+<input id="stake" value="5" type="number">
+
+<label>Duration</label><select id="dur"><option value="60">60 Seconds</option><option value="120">2 Minutes</option><option value="300">5 Minutes</option></select>
+
+<div class="tradeBtns">
+<button class="green" onclick="placeTrade('RISE')">▲ RISE<br><small>Win +95%</small></button>
+<button class="red" onclick="placeTrade('FALL')">▼ FALL<br><small>Win +95%</small></button>
 </div>
 
-<!-- M-PESA DEPOSIT -->
-<div id="dep-mpesa">
-<div class="paybox">Send to: <b>0722 XXX XXX</b> <span style="color:#00ff88">M-Pesa Send Money</span><br><small>Name: Clinton Kerama • Use your FBS username as reference</small><br>
-<label>Amount (KES)</label><input id="dMpesaAmt" type="number" placeholder="e.g 1000">
-<label>M-Pesa Code (e.g QK...)</label><input id="dMpesaCode" placeholder="Enter M-Pesa Code">
-<label>Your M-Pesa Phone</label><input id="dMpesaPhone" placeholder="07XX XXX XXX">
-<button class="btn green" onclick="submitDep('M-Pesa')">I Have Sent - Confirm Deposit</button>
+<div id="openTrades" style="margin-top:12px"></div>
+<div id="tradeLog" style="font-size:13px;color:#aaa;margin-top:8px"></div>
 </div></div>
 
-<!-- BANK DEPOSIT -->
-<div id="dep-bank" style="display:none">
-<div class="paybox">Bank: <b>Equity Bank</b><br>Account Name: <b>Clinton Kerama</b><br>Account No: <b>YOUR ACCOUNT NO</b> <button class="copy" onclick="copyTxt('YOUR ACCOUNT NO')">Copy</button><br>Branch: <b>YOUR BRANCH</b><br><small>Change this to your real bank in code</small><br>
-<label>Amount (KES)</label><input id="dBankAmt" type="number" placeholder="e.g 5000">
-<label>Bank Reference / Slip No</label><input id="dBankRef" placeholder="Enter Ref">
-<button class="btn green" onclick="submitDep('Bank')">I Have Sent - Confirm Deposit</button>
-</div></div>
+<!-- DEPOSIT -->
+<div id="dep" class="modal"><div class="box"><h2>Deposit</h2>
+<div class="tabs"><button id="d-mpesa" class="active" onclick="setPay('dep','mpesa')">M-Pesa</button><button id="d-bank" onclick="setPay('dep','bank')">Bank</button><button id="d-crypto" onclick="setPay('dep','crypto')">Crypto</button></div>
+<div id="dep-mpesa"><div class="paybox">Send to: <b>0722 XXX XXX</b> M-Pesa Send Money<br><label>Amount KES</label><input id="dMpesaAmt" type="number" placeholder="1000"><label>M-Pesa Code</label><input placeholder="QK..."><button class="btn green" onclick="alert('Deposit Request Sent - Admin will confirm');closeModal('dep')">Confirm Deposit</button></div></div>
+<div id="dep-bank" style="display:none"><div class="paybox">Bank: <b>Equity</b> Acc: <b>YOUR ACC NO</b><br><label>Amount KES</label><input type="number" placeholder="5000"><button class="btn green" onclick="alert('Deposit Request Sent');closeModal('dep')">Confirm Deposit</button></div></div>
+<div id="dep-crypto" style="display:none"><div class="paybox">USDT TRC20: <b>TXXXX...YOUR WALLET</b><br><label>Amount USD</label><input type="number" placeholder="50"><label>TxID</label><input placeholder="TxID"><button class="btn green" onclick="alert('Deposit Request Sent');closeModal('dep')">Confirm Deposit</button></div></div>
+<button class="btn white" onclick="closeModal('dep')">Close</button></div></div>
 
-<!-- CRYPTO DEPOSIT -->
-<div id="dep-crypto" style="display:none">
-<div class="paybox">
-<label>Select Coin</label><select id="dCryptoCoin" onchange="showCryptoAddr('dep')">
-<option value="USDT TRC20">USDT - TRC20 (Tron) - Low Fee</option>
-<option value="USDT BEP20">USDT - BEP20 (BSC)</option>
-<option value="BTC">BTC - Bitcoin</option>
-<option value="ETH">ETH - Ethereum</option></select>
-<div id="depCryptoAddr">Wallet: <b>TXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</b> <button class="copy" onclick="copyTxt('TXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')">Copy</button><br><small>Replace with YOUR real wallet address</small></div>
-<label>Amount (USD)</label><input id="dCryptoAmt" type="number" placeholder="e.g 50">
-<label>TxID / Hash</label><input id="dCryptoHash" placeholder="Paste TxID">
-<button class="btn green" onclick="submitDep('Crypto')">I Have Sent - Confirm Deposit</button>
-</div></div>
-<button class="btn white" onclick="closeModal('dep')">Close</button>
-</div></div>
-
-<!-- WITHDRAW MODAL -->
-<div id="wd" class="modal"><div class="box">
-<h2>Withdraw</h2>
-<div class="tabs">
-<button id="w-mpesa" class="active" onclick="setPay('wd','mpesa')">M-Pesa</button>
-<button id="w-bank" onclick="setPay('wd','bank')">Bank</button>
-<button id="w-crypto" onclick="setPay('wd','crypto')">Crypto</button>
-</div>
-
-<div id="wd-mpesa">
-<label>Amount (USD)</label><input id="wMpesaAmt" type="number" placeholder="e.g 20">
-<label>Your M-Pesa Number</label><input id="wMpesaPhone" placeholder="07XX XXX XXX">
-<label>Your Full Name (M-Pesa Name)</label><input id="wMpesaName" placeholder="As on ID">
-<button class="btn orange" onclick="submitWd('M-Pesa')">Request M-Pesa Withdrawal</button>
-<small style="color:#aaa">Fee: 0% • Min $5 • Processed in 5-30 mins • Rate: 1 USD = 130 KES</small>
-</div>
-
-<div id="wd-bank" style="display:none">
-<label>Amount (USD)</label><input id="wBankAmt" type="number" placeholder="e.g 100">
-<label>Bank Name</label><input id="wBankName" placeholder="Equity / KCB / Co-op">
-<label>Account Name</label><input id="wBankAccName" placeholder="As on Bank">
-<label>Account Number</label><input id="wBankAccNo" placeholder="Account No">
-<label>Branch</label><input id="wBankBranch" placeholder="Branch">
-<button class="btn orange" onclick="submitWd('Bank')">Request Bank Withdrawal</button>
-<small style="color:#aaa">Fee: $2 • Min $50 • 1-2 Working Days</small>
-</div>
-
-<div id="wd-crypto" style="display:none">
-<label>Select Coin</label><select id="wCryptoCoin"><option>USDT TRC20</option><option>USDT BEP20</option><option>BTC</option><option>ETH</option></select>
-<label>Amount (USD)</label><input id="wCryptoAmt" type="number" placeholder="e.g 50">
-<label>Your Wallet Address</label><input id="wCryptoAddr" placeholder="Paste your USDT / BTC address">
-<button class="btn orange" onclick="submitWd('Crypto')">Request Crypto Withdrawal</button>
-<small style="color:#aaa">Fee: $1 • Min $10 • 10-30 mins after approval</small>
-</div>
-<button class="btn white" onclick="closeModal('wd')">Close</button>
-</div></div>
+<!-- WITHDRAW -->
+<div id="wd" class="modal"><div class="box"><h2>Withdraw</h2>
+<div class="tabs"><button id="w-mpesa" class="active" onclick="setPay('wd','mpesa')">M-Pesa</button><button id="w-bank" onclick="setPay('wd','bank')">Bank</button><button id="w-crypto" onclick="setPay('wd','crypto')">Crypto</button></div>
+<div id="wd-mpesa"><label>Amount USD</label><input type="number" placeholder="20"><label>M-Pesa Number</label><input placeholder="07XX XXX XXX"><button class="btn orange" onclick="alert('Withdrawal Request Sent');closeModal('wd')">Request Withdrawal</button></div>
+<div id="wd-bank" style="display:none"><label>Amount USD</label><input type="number" placeholder="100"><label>Bank Account</label><input placeholder="Account No"><button class="btn orange" onclick="alert('Withdrawal Request Sent');closeModal('wd')">Request Withdrawal</button></div>
+<div id="wd-crypto" style="display:none"><label>Amount USD</label><input type="number" placeholder="50"><label>Wallet Address</label><input placeholder="USDT Address"><button class="btn orange" onclick="alert('Withdrawal Request Sent');closeModal('wd')">Request Withdrawal</button></div>
+<button class="btn white" onclick="closeModal('wd')">Close</button></div></div>
 
 <script>
+let bal=794, demoBal=10000, mode='REAL', closed=0, todayP=0, curPair='EUR/USD', curPrice=1.0996, prices={}, history={};
+let pairs=[
+ {s:'EUR/USD', p:1.0996, ch:-0.02},
+ {s:'GBP/USD', p:1.3196, ch:-0.03},
+ {s:'USD/JPY', p:159.41, ch:0.01},
+ {s:'Volatility 100', p:845.22, ch:0.45},
+ {s:'Volatility 75', p:452.10, ch:-0.12},
+ {s:'BTC/USD', p:97450, ch:1.20},
+];
+pairs.forEach(x=>{prices[x.s]=x.p; history[x.s]=Array.from({length:40},()=>x.p)});
+
+function renderPairs(){
+  document.getElementById('pairs').innerHTML=pairs.map(p=>{
+    let c=p.ch>=0?'#00ff88':'#ff444f'; let a=p.ch>=0?'▲':'▼';
+    return `<div class="pair" onclick="openTrade('${p.s}')"><b>${p.s} - $${prices[p.s].toFixed(p.s.includes('JPY')||p.s.includes('BTC')?2:4)} <span style="color:${c}">${a} ${p.ch.toFixed(2)}%</span></b><br><small style="color:#aaa">Tap to open ></small></div>`
+  }).join('');
+}
+renderPairs();
+
+// Live prices every 1 sec
+setInterval(()=>{
+  pairs.forEach(p=>{
+    let move=(Math.random()-0.5)*p.p*0.001;
+    prices[p.s]+=move; p.ch+=(Math.random()-0.5)*0.02;
+    history[p.s].push(prices[p.s]); if(history[p.s].length>40) history[p.s].shift();
+  });
+  renderPairs();
+  if(document.getElementById('trade').style.display=='block'){ updateTradeUI(); drawChart(); }
+},1000);
+
+function setMode(m){mode=m; document.getElementById('modeTxt').innerText=m; document.getElementById('bal').innerText=(m=='REAL'?bal:demoBal).toFixed(2); alert(m+' mode - Balance $'+(m=='REAL'?bal:demoBal).toFixed(2))}
+function getBal(){return mode=='REAL'?bal:demoBal}
+function setBal(v){ if(mode=='REAL') bal=v; else demoBal=v; document.getElementById('bal').innerText=v.toFixed(2); }
+function setStake(v){document.getElementById('stake').value=v}
 function openModal(id){document.getElementById(id).style.display='block'}
 function closeModal(id){document.getElementById(id).style.display='none'}
-function setPay(type,method){
-  ['mpesa','bank','crypto'].forEach(m=>{
-    document.getElementById(type+'-'+m).style.display = (m==method?'block':'none');
-    let btn=document.getElementById((type=='dep'?'d-':'w-')+m);
-    btn.classList.toggle('active', m==method);
-  });
+function setPay(t,m){['mpesa','bank','crypto'].forEach(x=>{document.getElementById(t+'-'+x).style.display=x==m?'block':'none'; document.getElementById((t=='dep'?'d-':'w-')+x).classList.toggle('active',x==m)})}
+function openTrade(sym){curPair=sym; curPrice=prices[sym]; openModal('trade'); updateTradeUI(); drawChart();}
+function updateTradeUI(){document.getElementById('tradePair').innerText=curPair; document.getElementById('tradePrice').innerText='$'+prices[curPair].toFixed(4); let p=pairs.find(x=>x.s==curPair); document.getElementById('tradeChange').innerText=(p.ch>=0?'▲ ':'▼ ')+p.ch.toFixed(2)+'%'; document.getElementById('tradeChange').style.color=p.ch>=0?'#00ff88':'#ff444f';}
+function drawChart(){
+  let c=document.getElementById('chart'), ctx=c.getContext('2d'), h=history[curPair];
+  ctx.clearRect(0,0,400,180); ctx.beginPath(); ctx.strokeStyle='#00d084'; ctx.lineWidth=2;
+  let min=Math.min(...h), max=Math.max(...h);
+  h.forEach((v,i)=>{let x=i/(h.length-1)*400, y=170-((v-min)/(max-min||1))*160; i==0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.stroke();
+  ctx.fillStyle='#00d084'; ctx.fillRect(390,170-((h[h.length-1]-min)/(max-min||1))*160,4,4);
 }
-function showCryptoAddr(type){
-  let coin=document.getElementById('dCryptoCoin').value;
-  let addr = coin.includes('TRC20') ? 'TXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' : coin.includes('BEP20') ? '0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX' : coin=='BTC' ? 'bc1qXXXXXXXXXXXXXXXXXXXXXXXXXXX' : '0xXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
-  document.getElementById('depCryptoAddr').innerHTML='Wallet: <b>'+addr+'</b> <button class="copy" onclick="copyTxt(\''+addr+'\')">Copy</button><br><small>Network: '+coin+'</small>';
+function placeTrade(dir){
+  let stake=parseFloat(document.getElementById('stake').value);
+  if(!stake||stake<=0) return alert('Enter stake');
+  if(stake>getBal()) return alert('Insufficient balance! Balance $'+getBal().toFixed(2));
+  let entry=prices[curPair]; let dur=parseInt(document.getElementById('dur').value);
+  setBal(getBal()-stake);
+  document.getElementById('float').innerText='-'+stake.toFixed(2);
+  let id='T'+Date.now();
+  document.getElementById('openTrades').innerHTML=`<div class="paybox" id="${id}"><b>${curPair} ${dir}</b> - $${stake} @ $${entry.toFixed(4)}<br>Expires in <span>60</span>s... <span style="color:#ffaa00">OPEN</span></div>`+document.getElementById('openTrades').innerHTML;
+  document.getElementById('tradeLog').innerHTML='Trade placed! Waiting '+dur+'s...<br>'+document.getElementById('tradeLog').innerHTML;
+  let left=dur; let timer=setInterval(()=>{left--; let el=document.getElementById(id); if(el) el.querySelector('span').innerText=left; if(left<=0){clearInterval(timer); finishTrade(id,dir,entry,stake)}},1000);
 }
-function copyTxt(t){navigator.clipboard.writeText(t); alert('Copied: '+t)}
-function submitDep(m){
-  let amt = document.getElementById(m=='M-Pesa'?'dMpesaAmt':m=='Bank'?'dBankAmt':'dCryptoAmt').value;
-  if(!amt) return alert('Enter amount');
-  alert(m+' Deposit Request Sent!\nAmount: '+amt+'\nStatus: PENDING - Admin will confirm after checking payment.\nYou will get balance in 5-30 mins.');
-  closeModal('dep');
-  // TODO: Send to your WhatsApp / Google Sheet / Backend
-  let msg = encodeURIComponent('NEW DEPOSIT '+m+' Amount:'+amt+' User: Clinton');
-  window.open('https://wa.me/2547XXXXXXXX?text='+msg,'_blank');
+function finishTrade(id,dir,entry,stake){
+  let exit=prices[curPair]; let win=(dir=='RISE'&&exit>entry)||(dir=='FALL'&&exit<entry);
+  let profit=win?stake*0.95:-stake;
+  if(win) setBal(getBal()+stake+stake*0.95);
+  todayP+=profit; closed++;
+  document.getElementById('today').innerText=todayP.toFixed(2); document.getElementById('closed').innerText=closed; document.getElementById('float').innerText='0.00';
+  let el=document.getElementById(id); if(el) el.innerHTML=`<b>${curPair} ${dir}</b> Entry $${entry.toFixed(4)} Exit $${exit.toFixed(4)}<br><b style="color:${win?'#00ff88':'#ff444f'}">${win?'✅ WIN +$'+(stake*0.95).toFixed(2):'❌ LOSS -$'+stake.toFixed(2)}</b>`;
+  alert(win?'✅ WIN! +$'+(stake*0.95).toFixed(2):'❌ LOSS -$'+stake.toFixed(2));
 }
-function submitWd(m){
-  alert(m+' Withdrawal Request Sent!\nStatus: PENDING - Admin will send in 5-30 mins (Bank 1-2 days).\nCheck your '+m+' shortly.');
-  closeModal('wd');
-}
+function resetDemo(){demoBal=10000; if(mode=='DEMO') document.getElementById('bal').innerText='10000.00'; alert('Demo Reset to $10000')}
 </script></body></html>
