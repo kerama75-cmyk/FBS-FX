@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>FBS FX</title>
-<meta name="theme-color" content="#0a0f1e">
+<meta name="theme-color" content="#131722">
 <link rel="manifest" href="/manifest.json">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="FBS FX"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1628/1628613.png">
@@ -17,15 +17,21 @@ body{font-family:Arial;background:#0a0f1e;color:#fff;padding:14px;margin:0;paddi
 input,select{width:100%;padding:12px;border-radius:8px;border:0;background:#1e2745;color:#fff;margin:6px 0;box-sizing:border-box}
 .tabs{display:flex;gap:6px}.tabs button{flex:1;padding:10px;border:0;border-radius:8px;background:#2a3350;color:#fff;font-weight:bold}.tabs button.active{background:#00d084;color:#000}
 .paybox{background:#0f1730;border:1px solid #2a3350;padding:12px;border-radius:10px;margin:8px 0}
-canvas{width:100%;height:280px;background:#000000;border-radius:10px;border:1px solid #1e2745}
+canvas{width:100%;height:340px;background:#131722;border:0;border-radius:0;display:block}
 .tradeBtns{display:flex;gap:8px}.tradeBtns button{flex:1;padding:16px;border:0;border-radius:12px;font-weight:bold;font-size:18px}
 .ctabs{display:flex;gap:6px;margin:8px 0}.ctabs button{flex:1;padding:8px;border:0;border-radius:8px;background:#2a3350;color:#fff;font-weight:bold}
 .lotBtns{display:flex;gap:6px}.lotBtns button{flex:1;padding:10px;background:#2a3350;color:#fff;border:0;border-radius:8px;font-weight:bold}
 .cat{display:flex;gap:6px;overflow-x:auto;padding:6px 0}.cat button{white-space:nowrap;padding:8px 14px;border:0;border-radius:20px;background:#2a3350;color:#fff;font-weight:bold}.cat button.active{background:#00d084;color:#000}
 .installBar{background:linear-gradient(90deg,#00d084,#0088ff);padding:12px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;margin:12px 0}
-.bottomNav{position:fixed;bottom:0;left:0;right:0;background:#141b32;display:flex;padding:10px 0 12px;border-top:1px solid #2a3350;z-index:50}
+.bottomNav{position:fixed;bottom:0;left:0;right:0;background:#141b32;display:flex;padding:10px 0 12px;border-top:1px solid #2a3350;z-index:999}
 .bottomNav button{flex:1;background:none;border:0;color:#aaa;font-size:11px}.bottomNav button.active{color:#00d084;font-weight:bold}
 .accRow{background:#1e2745;padding:14px;border-radius:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+div[class*="netlify"], a[href*="netlify"], .netlify-badge{display:none !important}
+/* TRADE - NO FRAME FULL SCREEN LIKE FBS */
+#trade .box{padding:0;margin:0;max-width:100%;border-radius:0;background:#131722}
+#trade .pad{padding:14px 14px 0 14px}
+#trade .pad2{padding:0 14px 14px 14px}
+#trade canvas{margin:0;width:100%}
 </style></head><body>
 
 <div id="loginScreen">
@@ -42,7 +48,7 @@ canvas{width:100%;height:280px;background:#000000;border-radius:10px;border:1px 
 <h3 style="margin:0">📱 Download FBS FX App</h3><p style="font-size:13px;color:#aaa">Install on your phone - trade faster, works full-screen.</p>
 <button class="btn green" onclick="installApp()">⬇ INSTALL APP NOW</button>
 <button class="btn white" onclick="showInstallHelp()">How to Install?</button>
-<div id="installHelp" style="display:none;font-size:13px;background:#0f1730;padding:10px;border-radius:8px;margin-top:8px"><b>Android Chrome:</b> Tap ⋮ (top right) → Install app / Add to Home Screen → Install<br><br><b>iPhone Safari:</b> Tap Share ⬆ → Add to Home Screen → Add<br><br>If button does nothing, use menu method - it always works.</div>
+<div id="installHelp" style="display:none;font-size:13px;background:#0f1730;padding:10px;border-radius:8px;margin-top:8px"><b>Android Chrome:</b> Tap ⋮ (top right) → Install app / Add to Home Screen → Install<br><br><b>iPhone Safari:</b> Tap Share ⬆ → Add to Home Screen → Add</div>
 <p style="font-size:12px;color:#00ff88;text-align:center" id="installStatus">Tap INSTALL APP - if no popup, use ⋮ menu</p>
 </div>
 <button class="btn blue" onclick="doLogin()">Continue Without Login → Demo</button>
@@ -72,17 +78,21 @@ canvas{width:100%;height:280px;background:#000000;border-radius:10px;border:1px 
 <div class="accRow" onclick="alert('Your link: https://fbsfx.netlify.app/?ref=YOURID - Earn $5')"><span>🎁 <b>Invite - Earn $5</b><br><small style="color:#aaa">Share your link</small></span><span>›</span></div>
 <div class="accRow" onclick="installApp()"><span>📱 <b>Download App</b><br><small style="color:#aaa">Install on home screen</small></span><span>›</span></div>
 <div class="accRow" onclick="logout()"><span>🚪 <b>Logout</b></span><span>›</span></div>
-<div class="card" style="font-size:13px;color:#aaa">M-Pesa Paybill: <b style="color:#fff">400200</b><br>Account No: <b style="color:#fff">01101170218001</b><br>Support: WhatsApp 07XX XXX XXX</div>
+<div class="card" style="font-size:13px;color:#aaa">M-Pesa Paybill: <b style="color:#fff">400200</b><br>Account No: <b style="color:#fff">01101170218001</b></div>
 </div>
 
+<!-- TRADE - NO FRAME -->
 <div id="trade" class="modal"><div class="box">
+<div class="pad">
 <button onclick="closeModal('trade')" style="float:right;background:#2a3350;color:#fff;border:0;padding:8px 12px;border-radius:8px">✕ Close</button>
 <h2 id="tradePair" style="margin:0">EUR/USD</h2>
 <div style="font-size:32px;font-weight:bold" id="tradePrice">$1.0996</div>
 <div id="tradeChange" style="color:#ff444f">▼ -0.02%</div>
-<div class="ctabs"><button id="btnCandle" style="background:#00d084;color:#000" onclick="setChart('candle')">🕯 Candles</button><button id="btnLine" onclick="setChart('line')">〰 Line</button><button onclick="setTF('1m')">1m</button><button onclick="setTF('5m')">5m</button></div>
-<canvas id="chart" width="400" height="280"></canvas>
-<div style="display:flex;justify-content:space-between;font-size:12px;color:#aaa;margin:4px 0"><span>🟢 Green = UP</span><span>🔴 Red = DOWN</span><span id="tfTxt">Timeframe: 1m</span></div>
+<div class="ctabs"><button id="btnCandle" style="background:#00d084;color:#000" onclick="setChart('candle')">🕯 Candles</button><button id="btnLine" onclick="setChart('line')">〰 Line</button><button onclick="setTF('1m')">1m</button><button onclick="setTF('5m')">5m</button><button onclick="setTF('15m')">15m</button></div>
+</div>
+<canvas id="chart" width="400" height="340"></canvas>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#aaa;padding:6px 14px"><span>🟢 Green = UP</span><span>🔴 Red = DOWN</span><span id="tfTxt">Timeframe: 1m</span></div>
+<div class="pad2">
 <label>Lot Size</label><div class="lotBtns"><button onclick="setLot(0.01)">0.01</button><button onclick="setLot(0.05)">0.05</button><button onclick="setLot(0.10)">0.10</button><button onclick="setLot(0.50)">0.50</button><button onclick="setLot(1.00)">1.00</button></div>
 <input id="lot" value="0.01" type="number" step="0.01">
 <label>Take Profit</label><input id="tp" type="number" placeholder="e.g 1.1100">
@@ -90,6 +100,7 @@ canvas{width:100%;height:280px;background:#000000;border-radius:10px;border:1px 
 <div style="background:#0f1730;padding:10px;border-radius:10px;font-size:13px;margin:8px 0">Margin: $<span id="marginNeed">1.10</span> | Profit per 100 pips: $<span id="estProfit">10.00</span></div>
 <div class="tradeBtns"><button class="green" onclick="placeTrade('BUY')">▲ BUY<br><small id="buyPrice">1.0996</small></button><button class="red" onclick="placeTrade('SELL')">▼ SELL<br><small id="sellPrice">1.0994</small></button></div>
 <div id="openTrades" style="margin-top:12px"></div>
+</div>
 </div></div>
 
 <div id="dep" class="modal"><div class="box"><h2>Deposit</h2>
@@ -139,11 +150,11 @@ let pairs=[
  {s:'Volatility 75', p:452.10, ch:-0.12, cat:'Volatility', dec:2},
 ];
 let prices={}, candles={}, history={};
-pairs.forEach(p=>{ prices[p.s]=p.p; history[p.s]=Array.from({length:40},()=>p.p); candles[p.s]=[]; let base=p.p; for(let i=0;i<30;i++){ let o=base, c=base+(Math.random()-0.5)*base*0.0015; let h=Math.max(o,c)+Math.random()*base*0.0007; let l=Math.min(o,c)-Math.random()*base*0.0007; candles[p.s].push({o,h,l,c}); base=c; } });
+pairs.forEach(p=>{ prices[p.s]=p.p; history[p.s]=Array.from({length:40},()=>p.p); candles[p.s]=[]; let base=p.p; for(let i=0;i:0;i++){ } for(let i=0;i<50;i++){ let o=base, c=base+(Math.random()-0.5)*base*0.0012; let h=Math.max(o,c)+Math.random()*base*0.0006; let l=Math.min(o,c)-Math.random()*base*0.0006; candles[p.s].push({o,h,l,c}); base=c; } });
 function setCat(cat,btn){ curCat=cat; document.querySelectorAll('.cat button').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderPairs(); }
 function renderPairs(){ let q=(document.getElementById('searchPair')?.value||'').toLowerCase(); let list=pairs.filter(p=> (curCat=='All'||p.cat==curCat) && p.s.toLowerCase().includes(q)); document.getElementById('pairs').innerHTML=list.map(p=>{ let c=p.ch>=0?'#00ff88':'#ff444f'; let a=p.ch>=0?'▲':'▼'; return `<div class="pair" onclick="openTrade('${p.s}')"><div><b>${p.s}</b><br><small style="color:#aaa">${p.cat} • Tap to open ></small></div><div style="text-align:right"><b>$${prices[p.s].toFixed(p.dec)}</b><br><span style="color:${c}">${a} ${p.ch.toFixed(2)}%</span></div></div>` }).join(''); }
 renderPairs();
-setInterval(()=>{ tickCount++; pairs.forEach(p=>{ let move=(Math.random()-0.5)*p.p*0.0009; prices[p.s]+=move; p.ch+=(Math.random()-0.5)*0.02; history[p.s].push(prices[p.s]); if(history[p.s].length>40) history[p.s].shift(); let arr=candles[p.s]; let last=arr[arr.length-1]; last.c=prices[p.s]; last.h=Math.max(last.h,prices[p.s]); last.l=Math.min(last.l,prices[p.s]); if(tickCount%6==0){ arr.push({o:prices[p.s],h:prices[p.s],l:prices[p.s],c:prices[p.s]}); if(arr.length>30) arr.shift(); } }); if(document.getElementById('mainApp').style.display!='none') renderPairs(); updatePositions(); if(document.getElementById('trade').style.display=='block'){ updateTradeUI(); drawChart(); } },1000);
+setInterval(()=>{ tickCount++; pairs.forEach(p=>{ let move=(Math.random()-0.5)*p.p*0.0009; prices[p.s]+=move; p.ch+=(Math.random()-0.5)*0.02; history[p.s].push(prices[p.s]); if(history[p.s].length>40) history[p.s].shift(); let arr=candles[p.s]; let last=arr[arr.length-1]; last.c=prices[p.s]; last.h=Math.max(last.h,prices[p.s]); last.l=Math.min(last.l,prices[p.s]); if(tickCount%5==0){ arr.push({o:prices[p.s],h:prices[p.s],l:prices[p.s],c:prices[p.s]}); if(arr.length>50) arr.shift(); } }); if(document.getElementById('mainApp').style.display!='none') renderPairs(); updatePositions(); if(document.getElementById('trade').style.display=='block'){ updateTradeUI(); drawChart(); } },1000);
 function setMode(m){mode=m; document.getElementById('modeTxt').innerText=m; document.getElementById('bal').innerText=(m=='REAL'?bal:demoBal).toFixed(2); document.getElementById('accBal').innerText=(m=='REAL'?bal:demoBal).toFixed(2); updatePositions();}
 function getBal(){return mode=='REAL'?bal:demoBal}
 function setBal(v){ if(mode=='REAL') bal=v; else demoBal=v; document.getElementById('bal').innerText=v.toFixed(2); document.getElementById('accBal').innerText=v.toFixed(2); }
@@ -152,31 +163,59 @@ function openModal(id){document.getElementById(id).style.display='block'}
 function closeModal(id){document.getElementById(id).style.display='none'}
 function setPay(t,m){['mpesa','bank','crypto'].forEach(x=>{document.getElementById(t+'-'+x).style.display=x==m?'block':'none'; document.getElementById((t=='dep'?'d-':'w-')+x).classList.toggle('active',x==m)})}
 function openTrade(sym){curPair=sym; openModal('trade'); updateTradeUI(); drawChart();}
-function updateTradeUI(){ let p=pairs.find(x=>x.s==curPair); document.getElementById('tradePair').innerText=curPair; let price=prices[curPair]; document.getElementById('tradePrice').innerText='$'+price.toFixed(p.dec); document.getElementById('tradeChange').innerText=(p.ch>=0?'▲ ':'▼ ')+p.ch.toFixed(2)+'%'; document.getElementById('tradeChange').style.color=p.ch>=0?'#00ff88':'#ff444f'; document.getElementById('buyPrice').innerText=price.toFixed(p.dec); document.getElementById('sellPrice').innerText=(price-0.0002).toFixed(p.dec); let lot=parseFloat(document.getElementById('lot').value)||0.01; document.getElementById('marginNeed').innerText=(lot*price*10).toFixed(2); document.getElementById('estProfit').innerText=(lot*1000).toFixed(2); }
+function updateTradeUI(){ let p=pairs.find(x=>x.s==curPair); document.getElementById('tradePair').innerText=curPair; let price=prices[curPair]; document.getElementById('tradePrice').innerText='$'+price.toFixed(p.dec); document.getElementById('tradeChange').innerText=(p.ch>=0?'▲ ':'▼ ')+p.ch.toFixed(2)+'%'; document.getElementById('tradeChange').style.color=p.ch>=0?'#089981':'#F23645'; document.getElementById('buyPrice').innerText=price.toFixed(p.dec); document.getElementById('sellPrice').innerText=(price-0.0002).toFixed(p.dec); let lot=parseFloat(document.getElementById('lot').value)||0.01; document.getElementById('marginNeed').innerText=(lot*price*10).toFixed(2); document.getElementById('estProfit').innerText=(lot*1000).toFixed(2); }
 function setChart(t){chartType=t; document.getElementById('btnCandle').style.background=t=='candle'?'#00d084':'#2a3350'; document.getElementById('btnLine').style.background=t=='line'?'#00d084':'#2a3350'; drawChart();}
 function setTF(tf){document.getElementById('tfTxt').innerText='Timeframe: '+tf}
 function drawChart(){
-  let c=document.getElementById('chart'), ctx=c.getContext('2d');
-  ctx.clearRect(0,0,400,280);
-  ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=1;
-  for(let y=0;y<280;y+=35){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(400,y); ctx.stroke(); }
-  for(let x=0;x<400;x+=40){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,280); ctx.stroke(); }
-  if(chartType=='line'){ let h=history[curPair]; ctx.beginPath(); ctx.strokeStyle='#00d084'; ctx.lineWidth=2.5; let min=Math.min(...h), max=Math.max(...h); h.forEach((v,i)=>{let x=i/(h.length-1)*400, y=270-((v-min)/(max-min||1))*250; i==0?ctx.moveTo(x,y):ctx.lineTo(x,y)}); ctx.stroke(); return; }
-  let arr=candles[curPair]; let allH=Math.max(...arr.map(x=>x.h)), allL=Math.min(...arr.map(x=>x.l)); let range=allH-allL||1; let w=400/arr.length;
+  let c=document.getElementById('chart');
+  let dpr = window.devicePixelRatio || 1;
+  let W = c.clientWidth, H = c.clientHeight;
+  if(c.width !== Math.floor(W*dpr)){ c.width = Math.floor(W*dpr); c.height = Math.floor(H*dpr); }
+  let ctx=c.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#131722'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+  for(let y=0;y<H;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  for(let x=0;x<W;x+=50){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  if(chartType=='line'){
+    let h=history[curPair]; ctx.beginPath(); ctx.strokeStyle='#2962FF'; ctx.lineWidth=2;
+    let min=Math.min(...h), max=Math.max(...h);
+    h.forEach((v,i)=>{let x=i/(h.length-1)*(W-60), y=20+((max-v)/(max-min||1))*(H-40); i==0?ctx.moveTo(x,y):ctx.lineTo(x,y)}); ctx.stroke(); return;
+  }
+  let arr=candles[curPair];
+  let allH=Math.max(...arr.map(x=>x.h)), allL=Math.min(...arr.map(x=>x.l));
+  let range=allH-allL||1;
+  let chartW = W-62;
+  let cw = chartW/arr.length;
+  let padTop=15, padBot=20;
   arr.forEach((cd,i)=>{
-    let x=i*w+w/2;
-    let yO=270-((cd.o-allL)/range)*250, yC=270-((cd.c-allL)/range)*250, yH=270-((cd.h-allL)/range)*250, yL=270-((cd.l-allL)/range)*250;
-    let isUp=cd.c>=cd.o;
-    let col=isUp?'#26a69a':'#ef5350';
-    ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=1.5;
+    let x = i*cw + cw/2;
+    let yO = padTop + ((allH-cd.o)/range)*(H-padTop-padBot);
+    let yC = padTop + ((allH-cd.c)/range)*(H-padTop-padBot);
+    let yH = padTop + ((allH-cd.h)/range)*(H-padTop-padBot);
+    let yL = padTop + ((allH-cd.l)/range)*(H-padTop-padBot);
+    let isUp = cd.c >= cd.o;
+    let col = isUp ? '#089981' : '#F23645';
+    let bodyW = Math.max(5, cw*0.65);
+    ctx.strokeStyle=col; ctx.lineWidth=1.2;
     ctx.beginPath(); ctx.moveTo(x,yH); ctx.lineTo(x,yL); ctx.stroke();
-    let top=Math.min(yO,yC), h=Math.max(5,Math.abs(yC-yO));
-    ctx.fillRect(x-w*0.38, top, w*0.76, h);
-    ctx.strokeRect(x-w*0.38, top, w*0.76, h);
+    ctx.fillStyle=col;
+    let top=Math.min(yO,yC), h=Math.max(2,Math.abs(yC-yO));
+    ctx.fillRect(x-bodyW/2, top, bodyW, h);
   });
-  let cur=prices[curPair]; let yCur=270-((cur-allL)/range)*250;
-  ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.setLineDash([5,5]); ctx.beginPath(); ctx.moveTo(0,yCur); ctx.lineTo(400,yCur); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle=cur>=arr[arr.length-1].o?'#26a69a':'#ef5350'; ctx.fillRect(340,yCur-9,60,18); ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.fillText(cur.toFixed(4),344,yCur+3);
+  let cur=prices[curPair];
+  let yCur = padTop + ((allH-cur)/range)*(H-padTop-padBot);
+  let lastUp = cur >= arr[arr.length-1].o;
+  let lastCol = lastUp ? '#089981' : '#F23645';
+  ctx.strokeStyle=lastCol; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,yCur); ctx.lineTo(chartW,yCur); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle=lastCol; ctx.fillRect(chartW, yCur-11, 62, 22);
+  ctx.fillStyle='#fff'; ctx.font='bold 11px Arial'; ctx.textAlign='left';
+  let p=pairs.find(x=>x.s==curPair);
+  ctx.fillText(cur.toFixed(p.dec), chartW+5, yCur+4);
+  ctx.fillStyle='#787B86'; ctx.font='10px Arial';
+  for(let i=0;i<5;i++){ let v=allL+(range*i/4); let y=padTop+((allH-v)/range)*(H-padTop-padBot); ctx.fillText(v.toFixed(p.dec), chartW+5, y+3); }
 }
 function placeTrade(dir){ let lot=parseFloat(document.getElementById('lot').value); if(!lot||lot<=0) return alert('Enter lot'); let entry=prices[curPair]; let margin=lot*entry*10; if(margin>getBal()) return alert('Not enough margin! Need $'+margin.toFixed(2)); let tp=document.getElementById('tp').value, sl=document.getElementById('sl').value; openPos.push({id:'P'+Date.now(), pair:curPair, dir, lot, entry, tp:tp?parseFloat(tp):null, sl:sl?parseFloat(sl):null, mode:mode}); alert(dir+' OPENED!\n'+lot+' lots '+curPair+' @ '+entry.toFixed(4)); updatePositions(); }
 function calcProfit(pos){ let cur=prices[pos.pair]; let diff=pos.dir=='BUY'?(cur-pos.entry):(pos.entry-cur); let pipSize=pos.pair.includes('JPY')?0.01:pos.pair.includes('BTC')||pos.pair.includes('US30')||pos.pair.includes('NAS')?1:pos.pair.includes('XAU')?0.1:0.0001; return (diff/pipSize)*pos.lot*10; }
